@@ -1,60 +1,64 @@
-Name:		tla
 Summary:	tla arch - revision control system
-Summary(pl):	tla arch - systeme kontroli wersji
+Summary(pl):	tla arch - system kontroli wersji
+Name:		tla
 Version:	1.1pre7
 Release:	2
 License:	GPL v2
 Group:		Development/Version Control
-URL:		http://regexps.srparish.net/www/
 Source0:	http://ftp.gnu.org/gnu/gnu-arch/%{name}-%{version}.tar.gz
 # Source0-md5:	98542bdbcaf2e6146f41ba90a7643fc0
+URL:		http://regexps.srparish.net/www/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-tla arch is a revision control system: a program that lets
-programmers archive a history of changes made to the software they
-maintain and that, more importantly, helps programmers to coordinate,
-synchronize, and combine multiple lines of development for a single
-project.
+tla arch is a revision control system: a program that lets programmers
+archive a history of changes made to the software they maintain and
+that, more importantly, helps programmers to coordinate, synchronize,
+and combine multiple lines of development for a single project.
 
 arch version tla is a C version of the reference arch concepts.
+
+%description -l pl
+tla arch jest systemem kontroli wersji - programem, który pozwala
+programistom archiwizowaæ historiê zmian wykonanych w rozwijanym przez
+nich oprogramowaniu oraz, co wa¿niejsze, pomaga programistom
+koordynowaæ, synchronizowaæ i ³±czyæ wiele linii kodu podczas rozwoju
+projektu.
+
+arch w wersji tla to wersja w C wzorcowych idei arch.
 
 %prep
 %setup -q
 
-## using: rpmbuild -ba --target=i686-redhat-linux tls-1.0.6.spec
-
 %build
-cd %{_builddir}/%{name}-%{version}/src
+cd src
 mkdir =build
 cd =build
 ## imitate what an rpm macro would export
-export CFLAGS="${RPM_OPT_FLAGS}" CXXFLAGS="${RPM_OPT_FLAGS}" FFLAGS="${RPM_OPT_FLAGS}";
+export CFLAGS="%{rpmcflags}" CXXFLAGS="%{rpmcflags}" FFLAGS="%{rpmcflags}"
 ../configure --prefix=%{_prefix} --destdir=%{buildroot}
 %{__make}
+
 # ok, I tested already
 %{__make} test
 
-
 %install
 rm -rf $RPM_BUILD_ROOT
-rm -rf %{buildroot}
-cd %{_builddir}/%{name}-%{version}/src/=build
-%{__make} install
+
+%{__make} -C src/=build install
+
 ## move some docs to a place the rpm doc macro likes
-cd %{_builddir}/%{name}-%{version}
 cp src/tla/=THANKS =THANKS
 cp --recursive src/docs-tla/html html
 cp --recursive src/docs-tla/ps ps
 cp --recursive src/docs-tla/texi texi
 
 # CLEANUP UNKNOWN USAGE DIRS
-rm -rf %{buildroot}%{_libdir}
-rm -rf %{buildroot}%{_prefix}/src
-
+rm -rf $RPM_BUILD_ROOT%{_libdir}
+rm -rf $RPM_BUILD_ROOT%{_prefix}/src
 
 %clean
-rm -rf %{buildroot}
+rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
