@@ -6,7 +6,7 @@ Release:	1
 Epoch:		1
 License:	GPL v2
 Group:		Development/Version Control
-Source0:	http://ftp.gnu.org/gnu/gnu-arch/%{name}-%{version}.tar.gz
+Source0:	http://regexps.srparish.net/src/tla/%{name}-%{version}.tar.gz
 # Source0-md5:	58527f281f425be1a015dcb015245a33
 URL:		http://www.gnu.org/software/gnu-arch/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
