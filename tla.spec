@@ -1,13 +1,13 @@
 Name:		tla
 Summary:	tla arch - revision control system
 Summary(pl):	tla arch - systeme kontroli wersji
-Version:	1.1pre5
+Version:	1.1pre7
 Release:	1
 License:	GPL v2
 Group:		Development/Version Control
 URL:		http://regexps.srparish.net/www/
-Source0:	http://regexps.srparish.net/src/%{name}/%{name}-%{version}.tar.gz
-# Source0-md5:	16512739150bdb81764a9d2fffb6a423
+Source0:	http://ftp.gnu.org/gnu/gnu-arch/%{name}-%{version}.tar.gz
+# Source0-md5:	98542bdbcaf2e6146f41ba90a7643fc0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
