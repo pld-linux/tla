@@ -3,7 +3,7 @@ Summary(pl):	tla arch - system kontroli wersji
 Name:		tla
 Version:	1.3
 %define	pre	pre3
-Release:	0.%{pre}.1
+Release:	0.%{pre}.2
 Epoch:		1
 License:	GPL v2
 Group:		Development/Version Control
