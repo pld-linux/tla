@@ -2,13 +2,12 @@ Summary:	tla arch - revision control system
 Summary(pl):	tla arch - system kontroli wersji
 Name:		tla
 Version:	1.3
-%define	pre	pre3
-Release:	0.%{pre}.2
+Release:	1
 Epoch:		1
 License:	GPL v2
 Group:		Development/Version Control
-Source0:	http://www.seyza.com/releases/%{name}-%{version}%{pre}.tar.gz
-# Source0-md5:	2e10eef523e5c14876db807057880c8b
+Source0:	http://www.seyza.com/releases/%{name}-%{version}.tar.gz
+# Source0-md5:	6093412e85d63fe79469bf386308d437
 # http://people.debian.org/~asuffield/daily/tla/lord/
 Patch0:		%{name}-neon.patch
 URL:		http://www.gnu.org/software/gnu-arch/
@@ -36,7 +35,7 @@ projektu.
 arch w wersji tla to wersja w C wzorcowych idei arch.
 
 %prep
-%setup -q -n %{name}-%{version}%{pre}
+%setup -q
 %patch0 -p1
 
 %build
