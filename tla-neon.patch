@@ -1,0 +1,20 @@
+--- tla-20040823.orig/src/tla/tla/PLUGIN/REQ
++++ tla-20040823/src/tla/tla/PLUGIN/REQ
+@@ -2,4 +2,4 @@
+ libawk		tla
+ libfsutils	tla
+ libdate		tla
+-libneon		tla
++
+--- tla-20040823.orig/src/tla/tla/Makefile.in
++++ tla-20040823/src/tla/tla/Makefile.in
+@@ -3,7 +3,7 @@
+ 				../libawk/libawk.a \
+ 				../libdate/libdate.a \
+ 				$(objroot)/hackerlab/libhackerlab/libhackerlab.a \
+-				../libneon/libneon.a \
++				-lneon \
+ 				-lm
+ 
+ mains			:=	tla.c
+
