@@ -62,7 +62,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc COPYING =INSTALL =RELEASE-ID html ps texi
+%doc html ps texi
 %attr(755,root,root) %{_bindir}/*
 #{_includedir}
 #{_libdir}
