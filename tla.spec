@@ -8,7 +8,10 @@ License:	GPL v2
 Group:		Development/Version Control
 Source0:	http://regexps.srparish.net/src/tla/%{name}-%{version}.tar.gz
 # Source0-md5:	40c70c9f881a2b0258441a447e1bd53d
+# http://people.debian.org/~asuffield/daily/tla/lord/
+Patch0:		%{name}-neon.patch
 URL:		http://www.gnu.org/software/gnu-arch/
+BuildRequires:	neon-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -30,31 +33,40 @@ arch w wersji tla to wersja w C wzorcowych idei arch.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
+rm -rf src/tla/libneon
+ln -s /usr/include/neon src/tla/libneon
 cd src
 mkdir =build
 cd =build
-## imitate what an rpm macro would export
-export CFLAGS="%{rpmcflags}" CXXFLAGS="%{rpmcflags}" FFLAGS="%{rpmcflags}"
-../configure --prefix=%{_prefix} --destdir=%{buildroot}
-%{__make}
+
+CFLAGS="%{rpmcflags}"
+CXXFLAGS="%{rpmcflags}"
+FFLAGS="%{rpmcflags}"
+export CFLAGS CXXFLAGS FFLAGS
+
+# custom configure script
+../configure \
+	--prefix=%{_prefix} \
+	--destdir=$RPM_BUILD_ROOT \
+	--with-ssh-is-openssh=1 \
+	--with-cc="%{__cc}"
+%{__make} -j1
 
 # ok, I tested already
-%{__make} test
+%{__make} -j1 test
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%{__make} -C src/=build install
+%{__make} -j1 -C src/=build install
 
-## move some docs to a place the rpm doc macro likes
 cp src/tla/=THANKS =THANKS
 cp --recursive src/docs-tla/html html
-cp --recursive src/docs-tla/ps ps
-cp --recursive src/docs-tla/texi texi
 
-# CLEANUP UNKNOWN USAGE DIRS
+rm -rf html/.arch-ids
 rm -rf $RPM_BUILD_ROOT%{_libdir}
 rm -rf $RPM_BUILD_ROOT%{_prefix}/src
 
@@ -63,8 +75,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc html ps texi
+%doc html
 %attr(755,root,root) %{_bindir}/*
-#{_includedir}
-#{_libdir}
-#{_libexecdir}
