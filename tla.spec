@@ -11,6 +11,9 @@ Source0:	http://regexps.srparish.net/src/tla/%{name}-%{version}.tar.gz
 # http://people.debian.org/~asuffield/daily/tla/lord/
 Patch0:		%{name}-neon.patch
 URL:		http://www.gnu.org/software/gnu-arch/
+Requires:	diffutils
+Requires:	patch
+Requires:	tar
 BuildRequires:	neon-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
