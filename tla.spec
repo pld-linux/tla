@@ -2,7 +2,7 @@ Name:		tla
 Summary:	tla arch - revision control system
 Summary(pl):	tla arch - systeme kontroli wersji
 Version:	1.1pre7
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Development/Version Control
 URL:		http://regexps.srparish.net/www/
@@ -59,7 +59,7 @@ rm -rf %{buildroot}
 %files
 %defattr(644,root,root,755)
 %doc COPYING =INSTALL =RELEASE-ID html ps texi
-%attr(755,root,root) %{_bindir}
+%attr(755,root,root) %{_bindir}/*
 #{_includedir}
 #{_libdir}
 #{_libexecdir}
