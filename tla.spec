@@ -2,7 +2,7 @@ Summary:	tla arch - revision control system
 Summary(pl):	tla arch - system kontroli wersji
 Name:		tla
 Version:	1.3.3
-Release:	1
+Release:	2
 Epoch:		1
 License:	GPL v2
 Group:		Development/Version Control
