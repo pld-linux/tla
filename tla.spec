@@ -2,7 +2,7 @@ Summary:	tla arch - revision control system
 Summary(pl):	tla arch - system kontroli wersji
 Name:		tla
 Version:	1.3.3
-Release:	2
+Release:	3
 Epoch:		1
 License:	GPL v2
 Group:		Development/Version Control
@@ -13,6 +13,7 @@ URL:		http://www.gnu.org/software/gnu-arch/
 Requires:	diffutils
 Requires:	patch
 Requires:	tar
+BuildRequires:	findutils
 BuildRequires:	neon-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -65,7 +66,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %{__make} -j1 -C src/=build install
 
-rm -rf html/.arch-ids
+rm -rf html
+cp -a src/docs-tla html
+find html -type f ! -name "*.html" -exec rm -rf "{}" ";"
+find html -type d -name ".arch-ids" -exec rm -rf "{}" ";" || :
+find html -type d -name "{arch}" -exec rm -rf "{}" ";" || :
+
 rm -rf $RPM_BUILD_ROOT%{_libdir}
 rm -rf $RPM_BUILD_ROOT%{_prefix}/src
 
