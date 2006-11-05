@@ -11,11 +11,11 @@ Source0:	ftp://ftp.gnu.org/pub/gnu/gnu-arch/%{name}-%{version}.tar.gz
 Patch0:		%{name}-neon.patch
 Patch1:		%{name}-debian.patch
 URL:		http://www.gnu.org/software/gnu-arch/
+BuildRequires:	findutils
+BuildRequires:	neon-devel
 Requires:	diffutils
 Requires:	patch
 Requires:	tar
-BuildRequires:	findutils
-BuildRequires:	neon-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
