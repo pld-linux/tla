@@ -1,0 +1,1954 @@
+--- tla-1.3.3.orig/src/tla/libfsutils/dir-listing.c
++++ tla-1.3.3/src/tla/libfsutils/dir-listing.c
+@@ -26,7 +26,7 @@
+ 
+   while (!safe_readdir (&file, dir))
+     {
+-      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (file)), 0);
++      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (file)), rel_record_null);
+       lim_free (0, file);
+     }
+ 
+@@ -50,7 +50,7 @@
+     {
+       while (!safe_readdir (&file, dir))
+         {
+-          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (file)), 0);
++          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (file)), rel_record_null);
+           lim_free (0, file);
+         }
+ 
+--- tla-1.3.3.orig/src/tla/libfsutils/find-utils.c
++++ tla-1.3.3/src/tla/libfsutils/find-utils.c
+@@ -26,7 +26,7 @@
+ 
+   if (!S_ISDIR (stat_buf.st_mode))
+     {
+-      rel_add_records (out, rel_singleton_record_taking (rel_make_field_str (path)), 0);
++      rel_add_records (out, rel_singleton_record_taking (rel_make_field_str (path)), rel_record_null);
+     }
+   else
+     {
+--- tla-1.3.3.orig/src/tla/libawk/relational.c
++++ tla-1.3.3/src/tla/libawk/relational.c
+@@ -329,6 +329,7 @@
+   return answer;
+ }
+ 
++const rel_record rel_record_null;
+ 
+ void
+ rel_add_records (rel_table * table, ...)
+@@ -467,7 +468,7 @@
+       while (*end && !char_is_space (*end))
+         ++end;
+ 
+-      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str_n (start, end - start)), 0);
++      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str_n (start, end - start)), rel_record_null);
+ 
+       start = end;
+     }
+@@ -495,7 +496,7 @@
+       while (*end && (*end != '\n'))
+         ++end;
+ 
+-      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str_n (start, end - start)), 0);
++      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str_n (start, end - start)), rel_record_null);
+ 
+       if (*end)
+         start = end + 1;
+@@ -837,7 +838,7 @@
+   lim = ar_size ((void *)t._r, 0, sizeof (rel_record));
+   for (x = 0; x < lim; ++x)
+     {
+-      rel_add_records (&answer, rel_cut_record (fields, t._r[x]), 0);
++      rel_add_records (&answer, rel_cut_record (fields, t._r[x]), rel_record_null);
+     }
+ 
+   return answer;
+--- tla-1.3.3.orig/src/tla/libawk/relational.h
++++ tla-1.3.3/src/tla/libawk/relational.h
+@@ -31,6 +31,8 @@
+ };
+ typedef struct rel_record rel_record;
+ 
++extern const rel_record rel_record_null;
++
+ struct rel_table
+ {
+   rel_record * _r;
+@@ -107,6 +109,7 @@
+                                             rel_field f6,
+                                             rel_field f7);
+ extern void rel_add_records (rel_table * table, ...);
++  /* must terminate list with rel_record_null, NOT 0 or NULL ! */
+ extern void rel_add_field_taking (rel_record * r, rel_field field);
+ extern void rel_add_field_to_row_taking (rel_table table, ssize_t row, rel_field field);
+ extern rel_record rel_singleton_record_taking (rel_field field);
+--- tla-1.3.3.orig/src/tla/libarch/tag.c
++++ tla-1.3.3/src/tla/libarch/tag.c
+@@ -122,7 +122,7 @@
+ 
+     revision = str_alloc_cat_many (0, version, "--", this_level, str_end);
+ 
+-    arch_run_hook ("tag", "ARCH_ARCHIVE", arch->name, "ARCH_REVISION", revision, "ARCH_TAGGED_ARCHIVE", from_arch->name, "ARCH_TAGGED_REVISION", from_revision, 0);
++    arch_run_hook ("tag", "ARCH_ARCHIVE", arch->name, "ARCH_REVISION", revision, "ARCH_TAGGED_ARCHIVE", from_arch->name, "ARCH_TAGGED_REVISION", from_revision, (t_uchar*)0);
+ 
+     lim_free (0, revision);
+   }
+@@ -187,7 +187,7 @@
+ 
+   merge_points = arch_archive_merge_points (from_arch, from_revision, 0, 0, 1);
+   fqrevision = arch_fully_qualify (arch->name, revision);
+-  rel_add_records (&merge_points, rel_make_record_2_taking (rel_make_field_str ("!!!!!nothing-should-depend-on-this"), rel_make_field_str (fqrevision)), 0);
++  rel_add_records (&merge_points, rel_make_record_2_taking (rel_make_field_str ("!!!!!nothing-should-depend-on-this"), rel_make_field_str (fqrevision)), rel_record_null);
+   rel_sort_table_by_field (0, merge_points, 1);
+   rel_uniq_by_field (&merge_points, 1);
+   arch_sort_table_by_name_field (0, merge_points, 1);
+--- tla-1.3.3.orig/src/tla/libarch/cmd-changeset.c
++++ tla-1.3.3/src/tla/libarch/cmd-changeset.c
+@@ -144,7 +144,7 @@
+               x++;
+ 
+             while (x < argc)
+-              rel_add_records (&file_list, rel_singleton_record_taking (rel_make_field_str (argv[x++])), 0);
++              rel_add_records (&file_list, rel_singleton_record_taking (rel_make_field_str (argv[x++])), rel_record_null);
+           }
+ 
+         if (file_list_file)
+--- tla-1.3.3.orig/src/tla/libarch/cmd-archive-setup.c
++++ tla-1.3.3/src/tla/libarch/cmd-archive-setup.c
+@@ -196,7 +196,7 @@
+             exit (1);
+           }
+         for (x = 1; x < argc; ++x)
+-          rel_add_records (&wants, rel_singleton_record_taking (rel_make_field_str (argv[x])), 0);
++          rel_add_records (&wants, rel_singleton_record_taking (rel_make_field_str (argv[x])), rel_record_null);
+       }
+ 
+     for (x = 0; x < rel_n_records (wants); ++x)
+@@ -221,7 +221,7 @@
+           }
+ 
+         if (tag_op == arch_archive_setup_no_tags)
+-          rel_add_records (&wants_decomposed, rel_make_record_2_taking (rel_make_field_str (archive), rel_make_field_str (non_archive)), 0);
++          rel_add_records (&wants_decomposed, rel_make_record_2_taking (rel_make_field_str (archive), rel_make_field_str (non_archive)), rel_record_null);
+         else
+           {
+             t_uchar * from_archive = 0;
+@@ -242,7 +242,7 @@
+                                                        rel_make_field_str (non_archive),
+                                                        rel_make_field_str (from_archive),
+                                                        rel_make_field_str (from_rev_spec)),
+-                             0);
++                             rel_record_null);
+ 
+             lim_free (0, from_archive);
+             lim_free (0, from_rev_spec);
+--- tla-1.3.3.orig/src/tla/libarch/library-txn.c
++++ tla-1.3.3/src/tla/libarch/library-txn.c
+@@ -137,7 +137,7 @@
+           exit (2);
+         }
+ 
+-      rel_add_records (&search_path, rel_singleton_record_taking (rel_get_field (full_user_path, x, 0)), 0);
++      rel_add_records (&search_path, rel_singleton_record_taking (rel_get_field (full_user_path, x, 0)), rel_record_null);
+     }
+ 
+   else
+@@ -245,7 +245,7 @@
+ 
+       if (require_greedy && !arch_library_is_greedy(rel_peek_str (full_user_path, x, 0)))
+ 	continue;
+-      rel_add_records (&search_path, rel_singleton_record_taking (rel_get_field (full_user_path, x, 0)), 0);
++      rel_add_records (&search_path, rel_singleton_record_taking (rel_get_field (full_user_path, x, 0)), rel_record_null);
+     }
+ 
+   return search_path;
+@@ -450,7 +450,7 @@
+ 
+       /* this is the first patch missing
+        */
+-      rel_add_records (&revisions,  rel_singleton_record_taking (rel_make_field_str (revision)), 0);
++      rel_add_records (&revisions,  rel_singleton_record_taking (rel_make_field_str (revision)), rel_record_null);
+ 
+       arch_chatter (chatter_fd, "* searching ancestor revision in library in archive %s\n", ancestor_archive);
+ 
+@@ -464,7 +464,7 @@
+           /* add revision to list
+            */
+ 
+-          rel_add_records (&revisions,  rel_singleton_record_taking (rel_make_field_str (anc_rev)), 0);
++          rel_add_records (&revisions,  rel_singleton_record_taking (rel_make_field_str (anc_rev)), rel_record_null);
+ 
+           /* look in the library for the immediate ancestor
+            */
+--- tla-1.3.3.orig/src/tla/libarch/cmd-commit.c
++++ tla-1.3.3/src/tla/libarch/cmd-commit.c
+@@ -296,7 +296,7 @@
+           goto usage_error;
+ 
+         while (argx < argc)
+-          rel_add_records (&file_list, rel_singleton_record_taking (rel_make_field_str (argv[argx++])), 0);
++          rel_add_records (&file_list, rel_singleton_record_taking (rel_make_field_str (argv[argx++])), rel_record_null);
+       }
+ 
+     if (!arch_valid_package_name (vsnspec, arch_maybe_archive, arch_req_version, 0))
+--- tla-1.3.3.orig/src/tla/libarch/archive-setup.c
++++ tla-1.3.3/src/tla/libarch/archive-setup.c
+@@ -34,7 +34,7 @@
+ {
+   rel_table wants  = rel_table_nil;
+ 
+-  rel_add_records (&wants, rel_make_record_2_taking (rel_make_field_str (archive_spec), rel_make_field_str (revision_spec)), 0);
++  rel_add_records (&wants, rel_make_record_2_taking (rel_make_field_str (archive_spec), rel_make_field_str (revision_spec)), rel_record_null);
+   arch_setup_archive (chatter_fd, wants, arch_archive_setup_no_tags, 0);
+ 
+   rel_free_table (wants);
+@@ -47,7 +47,7 @@
+ {
+   rel_table wants = rel_table_nil;
+ 
+-  rel_add_records (&wants, rel_make_record_2_taking (rel_make_field_str (arch->name), rel_make_field_str (revision_spec)), 0);
++  rel_add_records (&wants, rel_make_record_2_taking (rel_make_field_str (arch->name), rel_make_field_str (revision_spec)), rel_record_null);
+   arch_setup_archive_ext (chatter_fd, wants, arch_archive_setup_no_tags, 0, arch);
+ 
+   rel_free_table (wants);
+--- tla-1.3.3.orig/src/tla/libarch/archives.c
++++ tla-1.3.3/src/tla/libarch/archives.c
+@@ -182,7 +182,7 @@
+           t_uchar * location = 0;
+ 
+           location = arch_archive_location (f, 0);
+-          rel_add_records (&answer, rel_make_record_2_taking (rel_get_field (files, x, 0), rel_make_field_str (location)), 0);
++          rel_add_records (&answer, rel_make_record_2_taking (rel_get_field (files, x, 0), rel_make_field_str (location)), rel_record_null);
+ 
+           lim_free (0, location);
+         }
+--- tla-1.3.3.orig/src/tla/libarch/commit.c
++++ tla-1.3.3/src/tla/libarch/commit.c
+@@ -106,7 +106,7 @@
+ 
+   /* Check the error return code for the "precommit" hook and exit if non-zero.
+    */
+-  error = arch_run_hook ("precommit", "ARCH_ARCHIVE", arch->name, "ARCH_REVISION", revision, "ARCH_TREE_ROOT", tree_root, 0) ;
++  error = arch_run_hook ("precommit", "ARCH_ARCHIVE", arch->name, "ARCH_REVISION", revision, "ARCH_TREE_ROOT", tree_root, (t_uchar*)0) ;
+   if (error)
+     {
+       safe_printfmt (2, "arch_commit: precommit hook function failed with error (%d)\n commit cancelled.\n", error);
+@@ -164,7 +164,7 @@
+     arch_snap_inode_sig_files(tree_root, arch->name, prev_revision, revision, file_list);
+   }
+ 
+-  arch_run_hook ("commit", "ARCH_ARCHIVE", arch->name, "ARCH_REVISION", revision, "ARCH_TREE_ROOT", tree_root, 0);
++  arch_run_hook ("commit", "ARCH_ARCHIVE", arch->name, "ARCH_REVISION", revision, "ARCH_TREE_ROOT", tree_root, (t_uchar*)0);
+ 
+   lim_free (0, version);
+   lim_free (0, this_level);
+@@ -590,7 +590,7 @@
+       id = rel_peek_str (table, x, 1);
+ 
+       if (str_cmp_prefix ("A_", id))
+-        rel_add_records (&answer, rel_copy_record (rel_peek_record (table, x)), 0);
++        rel_add_records (&answer, rel_copy_record (rel_peek_record (table, x)), rel_record_null);
+     }
+ 
+   return answer;
+@@ -669,7 +669,7 @@
+                                                    rel_make_record_3_taking (rel_make_field_str (fqrev),
+                                                                              rel_get_field (table, x, 1),
+                                                                              rel_get_field (table, x, 2)),
+-                                                   0);
++                                                   rel_record_null);
+                                 }
+                             }
+                         }
+--- tla-1.3.3.orig/src/tla/libarch/namespace.c
++++ tla-1.3.3/src/tla/libarch/namespace.c
+@@ -849,7 +849,7 @@
+   for (x = 0; x < rel_n_records (in); ++x)
+     {
+       if (arch_valid_archive_name (rel_peek_str (in, x, field)))
+-        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), 0);
++        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), rel_record_null);
+     }
+ 
+   return answer;
+@@ -865,7 +865,7 @@
+   for (x = 0; x < rel_n_records (in); ++x)
+     {
+       if (arch_valid_package_name (rel_peek_str (in, x, field), arch_no_archive, arch_req_category, 0))
+-        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), 0);
++        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), rel_record_null);
+     }
+ 
+   return answer;
+@@ -880,7 +880,7 @@
+   for (x = 0; x < rel_n_records (in); ++x)
+     {
+       if (arch_valid_package_name (rel_peek_str (in, x, field), arch_no_archive, arch_req_package, 0))
+-        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), 0);
++        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), rel_record_null);
+     }
+ 
+   return answer;
+@@ -895,7 +895,7 @@
+   for (x = 0; x < rel_n_records (in); ++x)
+     {
+       if (arch_valid_package_name (rel_peek_str (in, x, field), arch_no_archive, arch_req_version, 0))
+-        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), 0);
++        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), rel_record_null);
+     }
+ 
+   return answer;
+@@ -910,7 +910,7 @@
+   for (x = 0; x < rel_n_records (in); ++x)
+     {
+       if (arch_valid_package_name (rel_peek_str (in, x, field), arch_no_archive, arch_req_patch_level, 0))
+-        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), 0);
++        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), rel_record_null);
+     }
+ 
+   return answer;
+@@ -925,7 +925,7 @@
+   for (x = 0; x < rel_n_records (in); ++x)
+     {
+       if (arch_valid_patch_level_name (rel_peek_str (in, x, field)))
+-        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), 0);
++        rel_add_records (&answer, rel_copy_record (rel_peek_record (in, x)), rel_record_null);
+     }
+ 
+   return answer;
+--- tla-1.3.3.orig/src/tla/libarch/patch-logs.c
++++ tla-1.3.3/src/tla/libarch/patch-logs.c
+@@ -380,7 +380,7 @@
+         continue;
+ 
+       if (arch_valid_package_name (rel_peek_str (dir_listing, x, 0), arch_no_archive, arch_req_category, 0))
+-        rel_add_records (&categories, rel_copy_record (rel_peek_record (dir_listing, x)), 0);
++        rel_add_records (&categories, rel_copy_record (rel_peek_record (dir_listing, x)), rel_record_null);
+     }
+   rel_free_table (dir_listing);
+ 
+@@ -422,7 +422,7 @@
+ 
+               branch_path = file_name_in_vicinity (0, cat_dir, maybe_branch);
+               rel_field_ref (maybe_branch_field);
+-              rel_add_records (&branches, rel_make_record_2_taking (maybe_branch_field, rel_make_field_str (branch_path)), 0);
++              rel_add_records (&branches, rel_make_record_2_taking (maybe_branch_field, rel_make_field_str (branch_path)), rel_record_null);
+               lim_free (0, branch_path);
+             }
+ 
+@@ -475,7 +475,7 @@
+ 
+               version_path = file_name_in_vicinity (0, branch_dir, maybe_version);
+               rel_field_ref (maybe_version_field);
+-              rel_add_records (&versions, rel_make_record_2_taking (maybe_version_field, rel_make_field_str (version_path)), 0);
++              rel_add_records (&versions, rel_make_record_2_taking (maybe_version_field, rel_make_field_str (version_path)), rel_record_null);
+               lim_free (0, version_path);
+             }
+ 
+@@ -528,7 +528,7 @@
+               t_uchar * fqversion;
+ 
+               fqversion = arch_fully_qualify (maybe_archive, version);
+-              rel_add_records (&log_versions, rel_make_record_2_taking (rel_make_field_str (fqversion), rel_make_field_str (patch_log_path)), 0);
++              rel_add_records (&log_versions, rel_make_record_2_taking (rel_make_field_str (fqversion), rel_make_field_str (patch_log_path)), rel_record_null);
+               lim_free (0, fqversion);
+             }
+ 
+@@ -623,14 +623,14 @@
+ 
+           if (!full)
+             {
+-              rel_add_records (&answer, rel_make_record_2_taking (rel_get_field (dir_listing, x, 0), rel_make_field_str (path)), 0);
++              rel_add_records (&answer, rel_make_record_2_taking (rel_get_field (dir_listing, x, 0), rel_make_field_str (path)), rel_record_null);
+             }
+           else
+             {
+               t_uchar * full_name = 0;
+ 
+               full_name = str_alloc_cat_many (0, archive, "/", version, "--", rel_peek_str (dir_listing, x, 0), str_end);
+-              rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (full_name), rel_make_field_str (path)), 0);
++              rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (full_name), rel_make_field_str (path)), rel_record_null);
+               lim_free (0, full_name);
+             }
+ 
+@@ -774,7 +774,7 @@
+       if (headers)
+         assoc_set_taking (headers, rel_make_field_str (field_name), rel_make_field_str (field_value));
+       if (headers_list)
+-        rel_add_records (headers_list, rel_make_record_2_taking (rel_make_field_str (field_name), rel_make_field_str (field_value)), 0);
++        rel_add_records (headers_list, rel_make_record_2_taking (rel_make_field_str (field_name), rel_make_field_str (field_value)), rel_record_null);
+ 
+       lim_free (0, field_name);
+       lim_free (0, field_value);
+--- tla-1.3.3.orig/src/tla/libarch/archive-pfs.c
++++ tla-1.3.3/src/tla/libarch/archive-pfs.c
+@@ -305,7 +305,7 @@
+       file = rel_peek_str (files, x, 0);
+       if (   arch_valid_package_name (file, arch_no_archive, req_type, 1)
+           && !str_cmp_prefix (prefix, file))
+-        rel_add_records (&answer, rel_make_record_1_taking (rel_make_field_str (arch_parse_package_name (ret_type, NULL, file))), 0);
++        rel_add_records (&answer, rel_make_record_1_taking (rel_make_field_str (arch_parse_package_name (ret_type, NULL, file))), rel_record_null);
+     }
+ 
+   rel_free_table (files);
+--- tla-1.3.3.orig/src/tla/libarch/cmd-join-branch.c
++++ tla-1.3.3/src/tla/libarch/cmd-join-branch.c
+@@ -221,7 +221,7 @@
+     else
+       dest = str_save (0, upon);
+ 
+-    arch_call_cmd (arch_cmd_replay, argv[0], "--dir", dest, fqbase0, ((escape_classes == 0) ? "--unescaped" : 0), 0);
++    arch_call_cmd (arch_cmd_replay, argv[0], "--dir", dest, fqbase0, ((escape_classes == 0) ? "--unescaped" : 0), (char*)0);
+ 
+ 
+     lim_free (0, archive);
+--- tla-1.3.3.orig/src/tla/libarch/whats-new.c
++++ tla-1.3.3/src/tla/libarch/whats-new.c
+@@ -41,7 +41,7 @@
+ 
+   while (x < rel_n_records (available))
+     {
+-      rel_add_records (&answer, rel_singleton_record_taking (rel_get_field (available, x, 0)), 0);
++      rel_add_records (&answer, rel_singleton_record_taking (rel_get_field (available, x, 0)), rel_record_null);
+       ++x;
+     }
+ 
+--- tla-1.3.3.orig/src/tla/libarch/cmd-rbrowse.c
++++ tla-1.3.3/src/tla/libarch/cmd-rbrowse.c
+@@ -279,7 +279,7 @@
+ 
+   if (! all_archives)
+     {
+-      rel_add_records (&archive_list, rel_singleton_record_taking (rel_make_field_str (default_archive)), 0);
++      rel_add_records (&archive_list, rel_singleton_record_taking (rel_make_field_str (default_archive)), rel_record_null);
+     }
+   else
+     {
+@@ -525,7 +525,7 @@
+           
+           if (regexec (&patch_regex_needle, summary, 0, 0, 0) == 0)
+             {
+-              rel_add_records (&patch_output, rel_singleton_record_taking (rel_make_field_str (log)), 0);
++              rel_add_records (&patch_output, rel_singleton_record_taking (rel_make_field_str (log)), rel_record_null);
+             }
+ 
+           lim_free(0, summary);
+@@ -592,7 +592,7 @@
+   t_uchar *latest_revision;
+   
+   latest_revision = arch_archive_latest_revision (arch, version, 1);
+-  rel_add_records (since_output, rel_singleton_record_taking (rel_make_field_str (latest_revision)),0);
++  rel_add_records (since_output, rel_singleton_record_taking (rel_make_field_str (latest_revision)),rel_record_null);
+   lim_free(0, latest_revision);
+ 
+ }
+--- tla-1.3.3.orig/src/tla/libarch/apply-changeset.c
++++ tla-1.3.3/src/tla/libarch/apply-changeset.c
+@@ -497,7 +497,7 @@
+             rel_add_records (&r->removed_dirs,
+                              rel_make_record_2_taking (target_loc_field,
+                                                        id_field),
+-                             0);
++                             rel_record_null);
+           }
+         tmp_name = set_aside_shuffled_dirs (&file_set_aside_with_dir_id, &dir_set_aside_with_dir_id, target_loc, id, seq, tmp_shuffled_dirs_root, &running, target, &inventory);
+         ++seq;
+@@ -578,7 +578,7 @@
+                        rel_make_record_3_taking (rel_get_field (changeset.added_dirs, x, 0),
+                                                  rel_make_field_str (""),
+                                                  rel_get_field (changeset.added_dirs, x, 1)),
+-                       0);
++                       rel_record_null);
+     }
+   rel_sort_table_by_field_fn (0, install_dirs_plan, 0, dir_depth_cmp);
+ 
+@@ -662,12 +662,12 @@
+               if (!deferred_conflict (&deferred_conflicts, removed_patch_conflict_files_path, target, install_loc, 0))
+                 {
+                   invoke_apply_changeset_callback (r, "A/  %s\n", no_dot (escaped_tmp));
+-                  rel_add_records (&r->new_dirs, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), 0);
++                  rel_add_records (&r->new_dirs, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), rel_record_null);
+                 }
+               else
+                 {
+                   invoke_apply_changeset_callback (r, "CA/ %s\n", no_dot (escaped_tmp));
+-                  rel_add_records (&r->conflict_dirs, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), 0);
++                  rel_add_records (&r->conflict_dirs, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), rel_record_null);
+                 }
+ 
+               safe_mkdir (install_name, perms);
+@@ -701,12 +701,12 @@
+                                rel_make_record_3_taking (rel_field_ref (oldtgtloc_field),
+                                                          rel_make_field_str (install_loc),
+                                                          id_field),
+-                               0);
++                               rel_record_null);
+             }
+           else
+             {
+               invoke_apply_changeset_callback (r, "C/> %s\t%s\n", escaped_tmp0, no_dot (escaped_tmp1));
+-              rel_add_records (&r->conflict_dirs, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), 0);
++              rel_add_records (&r->conflict_dirs, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), rel_record_null);
+             }
+ 
+           rel_field_unref (oldtgtloc_field);
+@@ -788,12 +788,12 @@
+                            rel_make_record_3_taking (rel_field_ref (old_target_loc_field),
+                                                      rel_make_field_str (install_loc),
+                                                      rel_field_ref (id_field)),
+-                           0);
++                           rel_record_null);
+         }
+       else
+         {
+           invoke_apply_changeset_callback (r, "C=> %s\t%s\n", escaped_tmp0, no_dot (escaped_tmp1));
+-          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), rel_record_null);
+         }
+ 
+       safe_rename (take_from, install_name);
+@@ -856,12 +856,12 @@
+       if (!deferred_conflict (&deferred_conflicts, removed_patch_conflict_files_path, target, install_loc, take_from))
+         {
+           invoke_apply_changeset_callback (r, "A   %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->new_files, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->new_files, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), rel_record_null);
+         }
+       else
+         {
+           invoke_apply_changeset_callback (r, "CA  %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_make_field_str (install_loc), rel_field_ref (id_field)), rel_record_null);
+         }
+ 
+       copy_file_or_symlink (take_from, install_name);
+@@ -912,7 +912,7 @@
+         {
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, mod_loc);
+           invoke_apply_changeset_callback (r, "?M  %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), rel_record_null);
+           save_patch_for_missing_file (missing_patch_dir, patch_path, mod_loc);
+           lim_free (0, escaped_tmp);
+           continue;
+@@ -937,7 +937,7 @@
+ 
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+           invoke_apply_changeset_callback (r, "C-> %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+           lim_free (0, escaped_tmp);
+         }
+       else if (arch_id_indicates_changelog (id))
+@@ -946,7 +946,7 @@
+                            rel_make_record_3_taking (rel_field_ref (target_loc_field),
+                                                      rel_field_ref (id_field),
+                                                      rel_make_field_str (target_path)),
+-                           0);
++                           rel_record_null);
+         }
+       else
+         {
+@@ -1010,7 +1010,7 @@
+                   escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+                   invoke_apply_changeset_callback (r, "M   %s\n",
+                                                    no_dot (escaped_tmp));
+-                  rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++                  rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+                   lim_free (0, escaped_tmp);
+                 }
+               else if (patch_stat == 1)
+@@ -1024,7 +1024,7 @@
+                   escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+                   invoke_apply_changeset_callback (r, "C   %s\n",
+                                                    no_dot (escaped_tmp));
+-                  rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++                  rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+ 
+                   lim_free (0, escaped_tmp);
+                   lim_free (0, orig_name);
+@@ -1111,7 +1111,7 @@
+         {
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, mod_loc);
+           invoke_apply_changeset_callback (r, "?M  %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), rel_record_null);
+           save_patch_for_missing_file (missing_patch_dir, orig_patch_path, mod_loc);
+           save_patch_for_missing_file (missing_patch_dir, mod_patch_path, mod_loc);
+           lim_free (0, escaped_tmp);
+@@ -1151,7 +1151,7 @@
+ 
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+           invoke_apply_changeset_callback (r, "C-> %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+ 
+           lim_free (0, escaped_tmp);
+           lim_free (0, orig_name);
+@@ -1213,7 +1213,7 @@
+               escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+               invoke_apply_changeset_callback (r, "M-> %s\n",
+                                                no_dot (escaped_tmp));
+-              rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++              rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+               lim_free (0, escaped_tmp);
+             }
+           else
+@@ -1278,7 +1278,7 @@
+         {
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, mod_loc);
+           invoke_apply_changeset_callback (r, "?M  %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), rel_record_null);
+           save_patch_for_missing_file (missing_patch_dir, orig_patch_path, mod_loc);
+           save_patch_for_missing_file (missing_patch_dir, mod_patch_path, mod_loc);
+           lim_free (0, escaped_tmp);
+@@ -1306,7 +1306,7 @@
+ 
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+           invoke_apply_changeset_callback (r, "Cb  %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+ 
+           lim_free (0, escaped_tmp);
+           lim_free (0, orig_name);
+@@ -1350,7 +1350,7 @@
+               escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+               invoke_apply_changeset_callback (r, "Mb  %s\n",
+                                                no_dot (escaped_tmp));
+-              rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++              rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+               lim_free (0, escaped_tmp);
+             }
+           else
+@@ -1410,7 +1410,7 @@
+         {
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, mod_loc);
+           invoke_apply_changeset_callback (r, "?M  %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), rel_record_null);
+           save_patch_for_missing_file (missing_patch_dir, orig_patch_path, mod_loc);
+           save_patch_for_missing_file (missing_patch_dir, mod_patch_path, mod_loc);
+           lim_free (0, escaped_tmp);
+@@ -1438,7 +1438,7 @@
+ 
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+           invoke_apply_changeset_callback (r, "Cch %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+ 
+           lim_free (0, escaped_tmp);
+           lim_free (0, orig_name);
+@@ -1487,7 +1487,7 @@
+               escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+               invoke_apply_changeset_callback (r, "ch  %s\n",
+                                                no_dot (escaped_tmp));
+-              rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++              rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+               lim_free (0, escaped_tmp);
+             }
+           else
+@@ -1550,7 +1550,7 @@
+         {
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, mod_loc);
+           invoke_apply_changeset_callback (r, "?M  %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->missing_file_for_patch, rel_make_record_2_taking (rel_field_ref (mod_loc_field), rel_field_ref (id_field)), rel_record_null);
+           save_patch_for_missing_file (missing_patch_dir, orig_patch_path, mod_loc);
+           save_patch_for_missing_file (missing_patch_dir, mod_patch_path, mod_loc);
+           lim_free (0, escaped_tmp);
+@@ -1585,7 +1585,7 @@
+ 
+           escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+           invoke_apply_changeset_callback (r, "Cch %s\n", no_dot (escaped_tmp));
+-          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++          rel_add_records (&r->conflict_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+ 
+           lim_free (0, escaped_tmp);
+           lim_free (0, orig_name);
+@@ -1632,7 +1632,7 @@
+               escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, target_loc);
+               invoke_apply_changeset_callback (r, "ch  %s\n",
+                                                no_dot (escaped_tmp));
+-              rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), 0);
++              rel_add_records (&r->modified_files, rel_make_record_2_taking (rel_field_ref (target_loc_field), rel_field_ref (id_field)), rel_record_null);
+               lim_free (0, escaped_tmp);
+             }
+           else
+@@ -1699,7 +1699,7 @@
+           invoke_apply_changeset_callback (r, "?-- %s\n", no_dot (escaped_tmp));
+           rel_field_ref (mod_loc_field);
+           rel_field_ref (id_field);
+-          rel_add_records (&r->missing_file_for_meta_patch, rel_make_record_2_taking (mod_loc_field, id_field), 0);
++          rel_add_records (&r->missing_file_for_meta_patch, rel_make_record_2_taking (mod_loc_field, id_field), rel_record_null);
+           save_patch_for_missing_file (missing_patch_dir, orig_patch_path, mod_loc);
+           save_patch_for_missing_file (missing_patch_dir, mod_patch_path, mod_loc);
+           lim_free (0, escaped_tmp);
+@@ -1733,7 +1733,7 @@
+           invoke_apply_changeset_callback (r, "C-- %s\n", no_dot (escaped_tmp));
+           rel_field_ref (target_loc_field);
+           rel_field_ref (id_field);
+-          rel_add_records (&r->metadata_conflict_files, rel_make_record_2_taking (target_loc_field, id_field), 0);
++          rel_add_records (&r->metadata_conflict_files, rel_make_record_2_taking (target_loc_field, id_field), rel_record_null);
+ 
+           lim_free (0, escaped_tmp);
+           lim_free (0, rej_name);
+@@ -1806,7 +1806,7 @@
+           invoke_apply_changeset_callback (r, "--  %s\n", no_dot (escaped_tmp));
+           rel_field_ref (target_loc_field);
+           rel_field_ref (id_field);
+-          rel_add_records (&r->meta_modified_files, rel_make_record_2_taking (target_loc_field, id_field), 0);
++          rel_add_records (&r->meta_modified_files, rel_make_record_2_taking (target_loc_field, id_field), rel_record_null);
+           lim_free (0, escaped_tmp);
+         }
+ 
+@@ -1872,7 +1872,7 @@
+           invoke_apply_changeset_callback (r, "?-/ %s\n", no_dot (escaped_tmp));
+           rel_field_ref (mod_loc_field);
+           rel_field_ref (id_field);
+-          rel_add_records (&r->missing_dir_for_meta_patch, rel_make_record_2_taking (mod_loc_field, id_field), 0);
++          rel_add_records (&r->missing_dir_for_meta_patch, rel_make_record_2_taking (mod_loc_field, id_field), rel_record_null);
+           save_patch_for_missing_file (missing_patch_dir, orig_patch_path, mod_loc);
+           save_patch_for_missing_file (missing_patch_dir, mod_patch_path, mod_loc);
+           lim_free (0, escaped_tmp);
+@@ -1928,7 +1928,7 @@
+         invoke_apply_changeset_callback (r, "--/ %s\n", no_dot (escaped_tmp));
+         rel_field_ref (target_loc_field);
+         rel_field_ref (id_field);
+-        rel_add_records (&r->meta_modified_dirs, rel_make_record_2_taking (target_loc_field, id_field), 0);
++        rel_add_records (&r->meta_modified_dirs, rel_make_record_2_taking (target_loc_field, id_field), rel_record_null);
+         lim_free (0, escaped_tmp);
+       }
+ 
+@@ -2006,7 +2006,7 @@
+       invoke_apply_changeset_callback (r, "cl  %s\n", no_dot (escaped_tmp));
+       rel_field_ref (target_loc_field);
+       rel_field_ref (id_field);
+-      rel_add_records (&r->modified_files, rel_make_record_2_taking (target_loc_field, id_field), 0);
++      rel_add_records (&r->modified_files, rel_make_record_2_taking (target_loc_field, id_field), rel_record_null);
+ 
+       rel_field_unref (target_loc_field);
+       rel_field_unref (id_field);
+@@ -2204,7 +2204,7 @@
+                                rel_make_record_3_taking (rel_make_field_str (id),
+                                                          rel_make_field_str (rel_peek_str (inv->files, y, 0) + target_loc_as_dir_len),
+                                                          rel_get_field (inv->files, y, 1)),
+-                               0);
++                               rel_record_null);
+             }
+         }
+     }
+@@ -2221,7 +2221,7 @@
+                                rel_make_record_3_taking (rel_make_field_str (id),
+                                                          rel_make_field_str (rel_peek_str (inv->dirs, y, 0) + target_loc_as_dir_len),
+                                                          rel_get_field (inv->dirs, y, 1)),
+-                               0);
++                               rel_record_null);
+             }
+         }
+     }
+@@ -2314,7 +2314,7 @@
+         {
+         conflict:
+           preserve_old_patch_spew (spew_root, target, loc);
+-          rel_add_records (deferred_conflicts, rel_singleton_record_taking (rel_make_field_str (loc)), 0);
++          rel_add_records (deferred_conflicts, rel_singleton_record_taking (rel_make_field_str (loc)), rel_record_null);
+ 
+           safe_rename (path, orig_path);
+           conflict_detected = 1;
+--- tla-1.3.3.orig/src/tla/libarch/pfs-dav.c
++++ tla-1.3.3/src/tla/libarch/pfs-dav.c
+@@ -21,14 +21,14 @@
+ #include "tla/libfsutils/file-contents.h"
+ #include "tla/libarch/archives.h"
+ #include "tla/libarch/pfs-dav.h"
+-#include "libneon/src/ne_session.h"
+-#include "libneon/src/ne_basic.h"
+-#include "libneon/src/ne_request.h"
+-#include "libneon/src/ne_auth.h"
+-#include "libneon/src/ne_props.h"
+-#include "libneon/src/ne_uri.h"
+-#include "libneon/src/ne_redirect.h"
+-#include "libneon/src/ne_socket.h"
++#include <neon/ne_session.h>
++#include <neon/ne_basic.h>
++#include <neon/ne_request.h>
++#include <neon/ne_auth.h>
++#include <neon/ne_props.h>
++#include <neon/ne_uri.h>
++#include <neon/ne_redirect.h>
++#include <neon/ne_socket.h>
+ 
+ 
+ 
+--- tla-1.3.3.orig/src/tla/libarch/import.c
++++ tla-1.3.3/src/tla/libarch/import.c
+@@ -121,7 +121,7 @@
+ 
+   arch_finish_import (tree_root, arch->name, version, pristine_path, changelog_loc, full_meta);
+ 
+-  arch_run_hook ("import", "ARCH_ARCHIVE", arch->name, "ARCH_REVISION", revision, "ARCH_TREE_ROOT", tree_root, 0);
++  arch_run_hook ("import", "ARCH_ARCHIVE", arch->name, "ARCH_REVISION", revision, "ARCH_TREE_ROOT", tree_root, (t_uchar*)0);
+   
+   lim_free (0, revision);
+   lim_free (0, changelog_loc);
+--- tla-1.3.3.orig/src/tla/libarch/inode-sig.c
++++ tla-1.3.3/src/tla/libarch/inode-sig.c
+@@ -343,7 +343,7 @@
+   t_uchar * signature = arch_statb_inode_sig (stat_buf);
+ 
+   if (!S_ISDIR (stat_buf->st_mode) && !S_ISLNK (stat_buf->st_mode))
+-    rel_add_records (answer, rel_make_record_2_taking (rel_make_field_str (id), rel_make_field_str (signature)), 0);
++    rel_add_records (answer, rel_make_record_2_taking (rel_make_field_str (id), rel_make_field_str (signature)), rel_record_null);
+   lim_free(0, signature);
+ }
+ 
+--- tla-1.3.3.orig/src/tla/libarch/libraries.c
++++ tla-1.3.3/src/tla/libarch/libraries.c
+@@ -60,7 +60,7 @@
+ 
+       if (!safe_access (maybe_archive_dir, F_OK))
+         {
+-          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_archive_dir)), 0);
++          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_archive_dir)), rel_record_null);
+         }
+ 
+       lim_free (0, maybe_archive_dir);
+@@ -73,7 +73,7 @@
+ 
+       priority_lib_dir = rel_peek_str (lib_path, 0, 0);
+       archive_dir = file_name_in_vicinity (0, priority_lib_dir, archive);
+-      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (archive_dir)), 0);
++      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (archive_dir)), rel_record_null);
+ 
+       lim_free (0, archive_dir);
+     }
+@@ -109,7 +109,7 @@
+ 
+       if (!safe_access (maybe_category_dir, F_OK))
+         {
+-          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_category_dir)), 0);
++          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_category_dir)), rel_record_null);
+         }
+ 
+       lim_free (0, maybe_category_dir);
+@@ -122,7 +122,7 @@
+ 
+       priority_archive_dir = rel_peek_str (archive_dirs, 0, 0);
+       category_dir = file_name_in_vicinity (0, priority_archive_dir, category);
+-      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (category_dir)));
++      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (category_dir)), rel_record_null);
+ 
+       lim_free (0, category_dir);
+     }
+@@ -162,7 +162,7 @@
+ 
+       if (!safe_access (maybe_branch_dir, F_OK))
+         {
+-          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_branch_dir)), 0);
++          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_branch_dir)), rel_record_null);
+         }
+ 
+       lim_free (0, maybe_branch_dir);
+@@ -175,7 +175,7 @@
+ 
+       priority_category_dir = rel_peek_str (category_dirs, 0, 0);
+       branch_dir = file_name_in_vicinity (0, priority_category_dir, branch);
+-      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (branch_dir)), 0);
++      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (branch_dir)), rel_record_null);
+ 
+       lim_free (0, branch_dir);
+     }
+@@ -216,7 +216,7 @@
+ 
+       if (!safe_access (maybe_version_dir, F_OK))
+         {
+-          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_version_dir)), 0);
++          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_version_dir)), rel_record_null);
+         }
+ 
+       lim_free (0, maybe_version_dir);
+@@ -229,7 +229,7 @@
+ 
+       priority_branch_dir = rel_peek_str (branch_dirs, 0, 0);
+       version_dir = file_name_in_vicinity (0, priority_branch_dir, version);
+-      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (version_dir)), 0);
++      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (version_dir)), rel_record_null);
+ 
+       lim_free (0, version_dir);
+     }
+@@ -270,7 +270,7 @@
+ 
+       if (!safe_access (maybe_revision_dir, F_OK))
+         {
+-          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_revision_dir)), 0);
++          rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (maybe_revision_dir)), rel_record_null);
+         }
+ 
+       lim_free (0, maybe_revision_dir);
+@@ -283,7 +283,7 @@
+ 
+       priority_version_dir = rel_peek_str (version_dirs, 0, 0);
+       revision_dir = file_name_in_vicinity (0, priority_version_dir, revision);
+-      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (revision_dir)), 0);
++      rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (revision_dir)), rel_record_null);
+ 
+       lim_free (0, revision_dir);
+     }
+--- tla-1.3.3.orig/src/tla/libarch/pristines.c
++++ tla-1.3.3/src/tla/libarch/pristines.c
+@@ -282,7 +282,7 @@
+ 
+             if (category)
+               {
+-                rel_add_records (&maybe_categories, rel_singleton_record_taking (rel_make_field_str (category)), 0);
++                rel_add_records (&maybe_categories, rel_singleton_record_taking (rel_make_field_str (category)), rel_record_null);
+               }
+             else
+               {
+@@ -303,7 +303,7 @@
+ 
+                     if (branch)
+                       {
+-                        rel_add_records (&maybe_branches, rel_singleton_record_taking (rel_make_field_str (branch)), 0);
++                        rel_add_records (&maybe_branches, rel_singleton_record_taking (rel_make_field_str (branch)), rel_record_null);
+                       }
+                     else
+                       {
+@@ -323,7 +323,7 @@
+ 
+                             if (version)
+                               {
+-                                rel_add_records (&maybe_versions, rel_singleton_record_taking (rel_make_field_str (version)), 0);
++                                rel_add_records (&maybe_versions, rel_singleton_record_taking (rel_make_field_str (version)), rel_record_null);
+                               }
+                             else
+                               {
+@@ -342,7 +342,7 @@
+ 
+                                     if (archive_limit)
+                                       {
+-                                        rel_add_records (&maybe_archives, rel_singleton_record_taking (rel_make_field_str (archive_limit)), 0);
++                                        rel_add_records (&maybe_archives, rel_singleton_record_taking (rel_make_field_str (archive_limit)), rel_record_null);
+                                       }
+                                     else
+                                       {
+@@ -360,7 +360,7 @@
+ 
+                                             if (revision)
+                                               {
+-                                                rel_add_records (&maybe_revisions, rel_singleton_record_taking (rel_make_field_str (revision)), 0);
++                                                rel_add_records (&maybe_revisions, rel_singleton_record_taking (rel_make_field_str (revision)), rel_record_null);
+                                               }
+                                             else
+                                               {
+@@ -375,7 +375,7 @@
+                                                     t_uchar * fqr = 0;
+ 
+                                                     fqr = arch_fully_qualify (rel_peek_str (maybe_archives, a, 0), rel_peek_str (maybe_revisions, r, 0));
+-                                                    rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (fqr)), 0);
++                                                    rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (fqr)), rel_record_null);
+                                                     lim_free (0, fqr);
+                                                   }
+                                               }
+@@ -490,7 +490,7 @@
+ 
+                   if (!vu_lstat (&ign, path, &stat_buf) && S_ISDIR (stat_buf.st_mode))
+                     {
+-                      rel_add_records (&sibling_paths, rel_singleton_record_taking (rel_make_field_str (path)), 0);
++                      rel_add_records (&sibling_paths, rel_singleton_record_taking (rel_make_field_str (path)), rel_record_null);
+                     }
+                   lim_free (0, path);
+                 }
+--- tla-1.3.3.orig/src/tla/libarch/invent.c
++++ tla-1.3.3/src/tla/libarch/invent.c
+@@ -170,7 +170,7 @@
+ {
+   rel_table * answer = (rel_table *)closure;
+ 
+-  rel_add_records (answer, rel_make_record_2_taking (rel_make_field_str (path), rel_make_field_str (id)), 0);
++  rel_add_records (answer, rel_make_record_2_taking (rel_make_field_str (path), rel_make_field_str (id)), rel_record_null);
+ }
+ 
+ 
+@@ -186,7 +186,7 @@
+   rel_table * answer = (rel_table *)closure;
+ 
+   if (!S_ISDIR (statb->st_mode))
+-    rel_add_records (answer, rel_make_record_2_taking (rel_make_field_str (path), rel_make_field_str (id)), 0);
++    rel_add_records (answer, rel_make_record_2_taking (rel_make_field_str (path), rel_make_field_str (id)), rel_record_null);
+ }
+ 
+ 
+--- tla-1.3.3.orig/src/tla/libarch/cmd.h
++++ tla-1.3.3/src/tla/libarch/cmd.h
+@@ -21,6 +21,7 @@
+ 
+ /* automatically generated __STDC__ prototypes */
+ extern int arch_call_cmd (arch_cmd_fn fn, t_uchar * prog_name, ...);
++  /* must terminate list with (char*)0, NOT 0 or NULL ! */
+ #endif  /* INCLUDE__LIBARCH__CMD_H */
+ 
+ 
+--- tla-1.3.3.orig/src/tla/libarch/cmd-changes.c
++++ tla-1.3.3/src/tla/libarch/cmd-changes.c
+@@ -287,7 +287,7 @@
+ 
+         while (argc > argn)
+           {
+-            rel_add_records (&limits, rel_singleton_record_taking (rel_make_field_str (argv[argn])), 0);
++            rel_add_records (&limits, rel_singleton_record_taking (rel_make_field_str (argv[argn])), rel_record_null);
+             ++argn;
+           }
+       }
+--- tla-1.3.3.orig/src/tla/libarch/configs.c
++++ tla-1.3.3/src/tla/libarch/configs.c
+@@ -122,7 +122,7 @@
+               exit (2);
+             }
+ 
+-          rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (loc), rel_make_field_str (rev)), 0);
++          rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (loc), rel_make_field_str (rev)), rel_record_null);
+ 
+           lim_free (0, loc);
+           lim_free (0, rev);
+@@ -188,7 +188,7 @@
+       else
+         fqr = arch_fully_qualify (archive, version);
+ 
+-      rel_add_records (&answer, rel_make_record_2_taking (rel_get_field (config_in, x, 0), rel_make_field_str (fqr)), 0);
++      rel_add_records (&answer, rel_make_record_2_taking (rel_get_field (config_in, x, 0), rel_make_field_str (fqr)), rel_record_null);
+ 
+       lim_free (0, subtree_path_spec);
+       lim_free (0, subtree_path);
+--- tla-1.3.3.orig/src/tla/libarch/hooks.h
++++ tla-1.3.3/src/tla/libarch/hooks.h
+@@ -17,6 +17,7 @@
+ 
+ /* automatically generated __STDC__ prototypes */
+ extern int arch_run_hook (t_uchar * name, ...);
++  /* must terminate list with (t_uchar*)0, NOT 0 or NULL ! */
+ #endif  /* INCLUDE__LIBARCH__HOOKS_H */
+ 
+ 
+--- tla-1.3.3.orig/src/tla/libarch/cmd-id.c
++++ tla-1.3.3/src/tla/libarch/cmd-id.c
+@@ -75,7 +75,6 @@
+   struct opt_parsed * option;
+   int silent;
+   enum arch_id_tagging_method method;
+-  t_uchar * answer;
+   int escape_classes = arch_escape_classes;
+ 
+   safe_buffer_fd (1, 0, O_WRONLY, 0);
+@@ -131,36 +130,45 @@
+         }
+     }
+ 
+-  if (argc != 2)
++  if (argc < 2)
+     goto usage_error;
+ 
+-  answer = arch_inventory_id (method, 0, argv[1], 0, 0, 0);
++  {
++    int a;
+ 
+-  if (!answer)
+-    {
+-      if (!silent)
+-        {
+-          t_uchar * escaped_tmp;
+-          escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, argv[1]);
+-          safe_printfmt (2, "\n");
+-          safe_printfmt (2, "%s: untagged file\n", argv[0]);
+-          safe_printfmt (2, "  %s\n", escaped_tmp);
+-          safe_printfmt (2, "\n");
+-          lim_free (0, escaped_tmp);
+-        }
+-      exit (1);
+-    }
+-  else
+-    {
+-      if (!silent)
+-        {
+-          t_uchar * escaped_tmp;
+-          escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, argv[1]);
+-          safe_printfmt (1, "%s\t%s\n", escaped_tmp, answer);
+-          lim_free (0, escaped_tmp);
+-        }
+-      exit (0);
+-    }
++    for (a = 1; a < argc; ++a)
++      {
++        t_uchar * answer;
++
++        answer = arch_inventory_id (method, 0, argv[a], 0, 0, 0);
++      
++        if (!answer)
++          {
++            if (!silent)
++              {
++                t_uchar * escaped_tmp;
++                escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, argv[a]);
++                safe_printfmt (2, "\n");
++                safe_printfmt (2, "%s: untagged file\n", argv[0]);
++                safe_printfmt (2, "  %s\n", escaped_tmp);
++                safe_printfmt (2, "\n");
++                lim_free (0, escaped_tmp);
++              }
++            exit (1);
++          }
++        else
++          {
++            if (!silent)
++              {
++                t_uchar * escaped_tmp;
++                escaped_tmp = pika_save_escape_iso8859_1 (0, 0, escape_classes, argv[a]);
++                safe_printfmt (1, "%s\t%s\n", escaped_tmp, answer);
++                lim_free (0, escaped_tmp);
++              }
++            lim_free (0, answer);
++          }
++      }
++  }
+ 
+   return 0;
+ }
+--- tla-1.3.3.orig/src/tla/libarch/ancestry.c
++++ tla-1.3.3/src/tla/libarch/ancestry.c
+@@ -44,7 +44,7 @@
+ 
+       if (!this_arch)
+         {
+-          rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (fq_rev), rel_make_field_str ("???")), 0);
++          rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (fq_rev), rel_make_field_str ("???")), rel_record_null);
+           done = 1;
+         }
+       else
+@@ -52,7 +52,7 @@
+           t_uchar * ancestor = 0;
+ 
+           if (!merges)
+-            rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (fq_rev), rel_make_field_str (fq_rev)), 0);
++            rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (fq_rev), rel_make_field_str (fq_rev)), rel_record_null);
+           else
+             {
+               enum arch_revision_type type;
+@@ -61,7 +61,7 @@
+ 
+               if (type == arch_continuation_revision)
+                 {
+-                  rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (fq_rev), rel_make_field_str (fq_rev)), 0);
++                  rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (fq_rev), rel_make_field_str (fq_rev)), rel_record_null);
+                 }
+               else
+                 {
+@@ -71,7 +71,7 @@
+                   merges = arch_archive_merge_points (this_arch, revision, 0, 0, 0);
+                   for (x = 0; x < rel_n_records (merges); ++x)
+                     {
+-                      rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (fq_rev), rel_get_field (merges, x, 1)), 0);
++                      rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (fq_rev), rel_get_field (merges, x, 1)), rel_record_null);
+                     }
+                   rel_free_table (merges);
+                 }
+--- tla-1.3.3.orig/src/tla/libarch/make-changeset.c
++++ tla-1.3.3/src/tla/libarch/make-changeset.c
+@@ -280,7 +280,7 @@
+ 
+           spec_loc = str_alloc_cat_many (0, ".", spec_dir_abs + mod_root_length, "/", spec_tail, str_end);
+ 
+-          rel_add_records (&lim_spec_locs, rel_singleton_record_taking (rel_make_field_str (spec_loc)), 0);
++          rel_add_records (&lim_spec_locs, rel_singleton_record_taking (rel_make_field_str (spec_loc)), rel_record_null);
+ 
+           lim_free (0, spec_dir);
+           lim_free (0, spec_tail);
+@@ -306,7 +306,7 @@
+                 }
+             }
+           if (!dont_want)
+-            rel_add_records (&limits, rel_singleton_record_taking (rel_get_field (lim_spec_locs, l, 0)), 0);
++            rel_add_records (&limits, rel_singleton_record_taking (rel_get_field (lim_spec_locs, l, 0)), rel_record_null);
+         }
+ 
+       rel_sort_table_by_field (0, limits, 0);
+@@ -339,7 +339,7 @@
+   rel_add_records (&orig_full_index,
+                    rel_make_record_2_taking (rel_make_field_str ("."),
+                                              rel_make_field_str ("?_.")),
+-                   0);
++                   rel_record_null);
+   rel_sort_table_by_field (0, orig_full_index, 1);
+ 
+   mod_full_index = rel_copy_table (report->mod_index.dirs);
+@@ -347,7 +347,7 @@
+   rel_add_records (&mod_full_index,
+                    rel_make_record_2_taking (rel_make_field_str ("."),
+                                              rel_make_field_str ("?_.")),
+-                   0);
++                   rel_record_null);
+   rel_sort_table_by_field (0, mod_full_index, 1);
+ 
+   mod_full_index_by_name = rel_copy_table (mod_full_index);
+@@ -742,7 +742,7 @@
+         lim = rel_n_records (renamed_dirs);
+         for (x = 0; x < lim; ++x)
+           {
+-            rel_add_records (&report->renamed_dirs, rel_copy_record (rel_peek_record (renamed_dirs, x)), 0);
++            rel_add_records (&report->renamed_dirs, rel_copy_record (rel_peek_record (renamed_dirs, x)), rel_record_null);
+             if (report->callback)
+               {
+                 t_uchar * escape_tmp0;
+@@ -759,7 +759,7 @@
+         lim = rel_n_records (renamed_files);
+         for (x = 0; x < lim; ++x)
+           {
+-            rel_add_records (&report->renamed_files, rel_copy_record (rel_peek_record (renamed_files, x)), 0);
++            rel_add_records (&report->renamed_files, rel_copy_record (rel_peek_record (renamed_files, x)), rel_record_null);
+             if (report->callback)
+               {
+                 t_uchar * escape_tmp0;
+@@ -973,7 +973,7 @@
+    */
+   rel_add_records (&report->mod_files_index,
+                    rel_make_record_2_taking (rel_make_field_str (mod_loc), rel_make_field_str (id)),
+-                   0);
++                   rel_record_null);
+   rel_sort_table_by_field (0, report->mod_files_index, 0);
+   rel_uniq_by_field (&report->mod_files_index, 0);
+ 
+@@ -981,7 +981,7 @@
+                    rel_make_record_3_taking (rel_make_field_str (mod_loc),
+                                              rel_make_field_str (id),
+                                              rel_make_field_str (new_file_path)),
+-                   0);
++                   rel_record_null);
+   rel_sort_table_by_field (0, report->added_files, 0);
+   rel_uniq_by_field (&report->added_files, 0);
+ 
+@@ -993,11 +993,11 @@
+   rel_add_records (&make_report->mod_index.files,
+                    rel_make_record_2_taking (rel_make_field_str (mod_loc),
+                                              rel_make_field_str (id)),
+-                   0);
++                   rel_record_null);
+   rel_sort_table_by_field (0, make_report->mod_index.files, 1);
+   rel_uniq_by_field (&make_report->mod_index.files, 1);
+ 
+-  rel_add_records (&make_report->added_files, rel_singleton_record_taking (rel_make_field_str (mod_loc)), 0);
++  rel_add_records (&make_report->added_files, rel_singleton_record_taking (rel_make_field_str (mod_loc)), rel_record_null);
+   rel_sort_table_by_field (0, make_report->added_files, 0);
+   rel_uniq_by_field (&make_report->added_files, 0);
+ 
+@@ -1051,13 +1051,13 @@
+     {
+       rel_add_records (&report->mod_files_index,
+                        rel_make_record_2_taking (rel_make_field_str (mod_loc), rel_make_field_str (id)),
+-                       0);
++                       rel_record_null);
+       rel_sort_table_by_field (0, report->mod_files_index, 0);
+       rel_uniq_by_field (&report->mod_files_index, 0);
+ 
+       rel_add_records (&report->orig_files_index,
+                        rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (id)),
+-                       0);
++                       rel_record_null);
+       rel_sort_table_by_field (0, report->orig_files_index, 0);
+       rel_uniq_by_field (&report->orig_files_index, 0);
+ 
+@@ -1065,7 +1065,7 @@
+                        rel_make_record_3_taking (rel_make_field_str (mod_loc),
+                                                  rel_make_field_str (id),
+                                                  rel_make_field_str (patch_path)),
+-                       0);
++                       rel_record_null);
+       rel_sort_table_by_field (0, report->patched_regular_files, 0);
+       rel_uniq_by_field (&report->patched_regular_files, 0);
+     }
+@@ -1081,21 +1081,21 @@
+   rel_add_records (&make_report->mod_index.files,
+                    rel_make_record_2_taking (rel_make_field_str (mod_loc),
+                                              rel_make_field_str (id)),
+-                   0);
++                   rel_record_null);
+   rel_sort_table_by_field (0, make_report->mod_index.files, 1);
+   rel_uniq_by_field (&make_report->mod_index.files, 1);
+ 
+   rel_add_records (&make_report->orig_index.files,
+                    rel_make_record_2_taking (rel_make_field_str (orig_loc),
+                                              rel_make_field_str (id)),
+-                   0);
++                   rel_record_null);
+   rel_sort_table_by_field (0, make_report->orig_index.files, 1);
+   rel_uniq_by_field (&make_report->orig_index.files, 1);
+ 
+   rel_add_records (&make_report->modified_files,
+                    rel_make_record_2_taking (rel_make_field_str (orig_loc),
+                                              rel_make_field_str (mod_loc)),
+-                   0);
++                   rel_record_null);
+   rel_sort_table_by_field (0, make_report->modified_files, 0);
+   rel_uniq_by_field (&make_report->modified_files, 0);
+ 
+@@ -1199,7 +1199,7 @@
+         {
+           rel_add_records (out,
+                            rel_make_record_2_taking (rel_field_ref (orig_field), rel_get_field (X_index, x, 0)),
+-                           0);
++                           rel_record_null);
+         }
+ 
+       rel_field_unref (id_field);
+@@ -1350,12 +1350,12 @@
+       int orig_patch_fd;
+       int mod_patch_fd;
+ 
+-      rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), 0);
+-      rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), 0);
++      rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), rel_record_null);
++      rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), rel_record_null);
+ 
+       if (report)
+         {
+-          rel_add_records (&report->perms_changed_dirs, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), 0);
++          rel_add_records (&report->perms_changed_dirs, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), rel_record_null);
+           if (report->callback)
+             {
+               t_uchar * escape_tmp;
+@@ -1448,12 +1448,12 @@
+           int orig_out_fd;
+           int mod_out_fd;
+ 
+-          rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), 0);
+-          rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), 0);
++          rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), rel_record_null);
++          rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), rel_record_null);
+ 
+           if (report)
+             {
+-              rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), 0);
++              rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), rel_record_null);
+               if (report->callback)
+                 {
+                   t_uchar * escape_tmp;
+@@ -1495,12 +1495,12 @@
+       t_uchar * patch_dir;
+       int orig_out_fd;
+ 
+-      rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), 0);
+-      rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), 0);
++      rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), rel_record_null);
++      rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), rel_record_null);
+ 
+       if (report)
+         {
+-          rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), 0);
++          rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), rel_record_null);
+           if (report->callback)
+             {
+               t_uchar * escape_tmp;
+@@ -1542,12 +1542,12 @@
+       t_uchar * patch_dir;
+       int mod_out_fd;
+ 
+-      rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), 0);
+-      rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), 0);
++      rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), rel_record_null);
++      rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), rel_record_null);
+ 
+       if (report)
+         {
+-          rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), 0);
++          rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), rel_record_null);
+           if (report->callback)
+             {
+               t_uchar * escape_tmp;
+@@ -1626,12 +1626,12 @@
+           int orig_meta_fd;
+           int mod_meta_fd;
+ 
+-          rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), 0);
+-          rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), 0);
++          rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), rel_record_null);
++          rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), rel_record_null);
+ 
+           if (report)
+             {
+-              rel_add_records (&report->perms_changed_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), 0);
++              rel_add_records (&report->perms_changed_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), rel_record_null);
+               if (report->callback)
+                 {
+                   t_uchar * escape_tmp;
+@@ -1717,12 +1717,12 @@
+         case 1:
+           {
+ 
+-            rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), 0);
+-            rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), 0);
++            rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), rel_record_null);
++            rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), rel_record_null);
+ 
+             if (report)
+               {
+-                rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), 0);
++                rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), rel_record_null);
+                 if (report->callback)
+                   {
+                     t_uchar * escape_tmp;
+@@ -1744,12 +1744,12 @@
+             t_uchar * orig_copy;
+             t_uchar * mod_copy;
+ 
+-            rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), 0);
+-            rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), 0);
++            rel_add_records (orig_index_names_output, rel_singleton_record_taking (rel_make_field_str (orig_loc)), rel_record_null);
++            rel_add_records (mod_index_names_output, rel_singleton_record_taking (rel_make_field_str (mod_loc)), rel_record_null);
+ 
+             if (report)
+               {
+-                rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), 0);
++                rel_add_records (&report->modified_files, rel_make_record_2_taking (rel_make_field_str (orig_loc), rel_make_field_str (mod_loc)), rel_record_null);
+                 if (report->callback)
+                   {
+                     t_uchar * escape_tmp;
+@@ -1966,12 +1966,12 @@
+ 
+           if (!added_orig && !assoc_get_str_taking (*orig_has_dir_id, rel_field_ref (container_id_field)) && assoc_get_str_taking (orig_dir_loc_of, rel_field_ref (container_id_field)))
+             {
+-              rel_add_records (added_orig_container_ids, rel_singleton_record_taking (rel_field_ref (container_id_field)), 0);
++              rel_add_records (added_orig_container_ids, rel_singleton_record_taking (rel_field_ref (container_id_field)), rel_record_null);
+               added_orig = 1;
+             }
+           if (!added_mod && !assoc_get_str_taking (*mod_has_dir_id, rel_field_ref (container_id_field)) && assoc_get_str_taking (mod_dir_loc_of, rel_field_ref (container_id_field)))
+             {
+-              rel_add_records (added_mod_container_ids, rel_singleton_record_taking (rel_field_ref (container_id_field)), 0);
++              rel_add_records (added_mod_container_ids, rel_singleton_record_taking (rel_field_ref (container_id_field)), rel_record_null);
+               added_mod = 1;
+             }
+ 
+@@ -2006,7 +2006,7 @@
+           rel_field deep_loc_field;
+ 
+           deep_loc_field = assoc_get_taking (dir_loc_of, rel_make_field_str (deep_id));
+-          rel_add_records (locs_out, rel_singleton_record_taking (rel_field_ref (deep_loc_field)), 0);
++          rel_add_records (locs_out, rel_singleton_record_taking (rel_field_ref (deep_loc_field)), rel_record_null);
+           assoc_set_taking (has_ids, rel_make_field_str (deep_id), rel_field_ref (deep_loc_field));
+ 
+           rel_field_unref (deep_loc_field);
+--- tla-1.3.3.orig/src/tla/libarch/changeset-utils.c
++++ tla-1.3.3/src/tla/libarch/changeset-utils.c
+@@ -165,7 +165,7 @@
+           exit (2);
+         }
+ 
+-      rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (loc), rel_make_field_str (id)), 0);
++      rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (loc), rel_make_field_str (id)), rel_record_null);
+       lim_free (0, loc);
+       lim_free (0, id);
+     }
+@@ -266,7 +266,7 @@
+           exit (2);
+         }
+ 
+-      rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (loc), rel_make_field_str (perms)), 0);
++      rel_add_records (&answer, rel_make_record_2_taking (rel_make_field_str (loc), rel_make_field_str (perms)), rel_record_null);
+ 
+       lim_free (0, perms);
+       lim_free (0, loc);
+@@ -465,9 +465,9 @@
+ 
+ 
+   if (S_ISDIR (stat_buf->st_mode))
+-    rel_add_records (&index->dirs, rel_make_record_2_taking (rel_make_field_str (path), rel_make_field_str (id)), 0);
++    rel_add_records (&index->dirs, rel_make_record_2_taking (rel_make_field_str (path), rel_make_field_str (id)), rel_record_null);
+   else
+-    rel_add_records (&index->files, rel_make_record_2_taking (rel_make_field_str (path), rel_make_field_str (id)), 0);
++    rel_add_records (&index->files, rel_make_record_2_taking (rel_make_field_str (path), rel_make_field_str (id)), rel_record_null);
+ }
+ 
+ 
+--- tla-1.3.3.orig/src/tla/libarch/cmd-abrowse.c
++++ tla-1.3.3/src/tla/libarch/cmd-abrowse.c
+@@ -410,7 +410,7 @@
+               {
+                 level = arch_parse_package_name (arch_ret_patch_level, 0, rev);
+                 assoc_set_taking (&since_limits, rel_make_field_str (version), rel_make_field_str (level));
+-                rel_add_records (&old_since_limits, rel_make_record_2_taking (rel_make_field_str (version), rel_make_field_str (level)), 0);
++                rel_add_records (&old_since_limits, rel_make_record_2_taking (rel_make_field_str (version), rel_make_field_str (level)), rel_record_null);
+               }
+ 
+             if (since_limits_opt)
+@@ -550,7 +550,7 @@
+                                     rel_add_records (&new_since_limits,
+                                                      rel_make_record_2_taking (rel_get_field (versions, v, 0),
+                                                                                rel_get_field (revisions, 0, 0)),
+-                                                     0);
++                                                     rel_record_null);
+                                 }
+                               else
+                                 {
+@@ -558,7 +558,7 @@
+                                     rel_add_records (&new_since_limits,
+                                                      rel_make_record_2_taking (rel_get_field (versions, v, 0),
+                                                                                rel_get_field (revisions, rel_n_records (revisions) - 1, 0)),
+-                                                     0);
++                                                     rel_record_null);
+                                 }
+ 
+                               for (r = 0; r < rel_n_records (revisions); ++r)
+--- tla-1.3.3.orig/src/tla/libarch/pfs-sftp.c
++++ tla-1.3.3/src/tla/libarch/pfs-sftp.c
+@@ -230,7 +230,7 @@
+   while (*fmt)
+     switch (*fmt++)
+       {
+-        case '8': /* int64 */
++        case '8': /* unsigned long long */
+           ll = va_arg (ap, unsigned long long);
+           len += sizeof (ll);
+           buf = lim_realloc (0, buf, len);
+@@ -238,7 +238,7 @@
+           i += sizeof (ll);
+           break;
+ 
+-        case '4': /* int32 */
++        case '4': /* t_uint32 */
+           l = va_arg (ap, t_uint32);
+           len += sizeof (l);
+           buf = lim_realloc (0, buf, len);
+@@ -246,7 +246,7 @@
+           i += sizeof (l);
+           break;
+ 
+-        case '1': /* int8 */
++        case '1': /* int */
+           c = va_arg (ap, int);
+           len += sizeof (c);
+           buf = lim_realloc (0, buf, len);
+@@ -254,9 +254,9 @@
+           i += sizeof (c);
+           break;
+ 
+-        case 's': /* string  (IE: <int32:length> <string>) */
++        case 's': /* char*,size_t  (IE: <int32:length> <string>) */
+           s = va_arg (ap, char *);
+-          l = va_arg (ap, int);
++          l = va_arg (ap, size_t);
+           len += sizeof (l) + l;
+           buf = lim_realloc (0, buf, len);
+           WRITE_UINT4 (buf + i, l);
+@@ -265,7 +265,7 @@
+           i += l;
+           break;
+ 
+-        case 'a': /* attributes */
++        case 'a': /* struct sftp_attrs* */
+             attrs = va_arg (ap, struct sftp_attrs *);
+           sftp_export_attrs (attrs, &s, &s_len);
+           len += s_len;
+@@ -468,7 +468,8 @@
+   int pkt_len;
+   char *pkt;
+ 
+-  sftp_write_pkt (p, soft_errors, "14", SSH_FXP_INIT, SFTP_VERSION, soft_errors);
++  sftp_write_pkt (p, soft_errors, "14", SSH_FXP_INIT, 
++		  (t_uint32)SFTP_VERSION, soft_errors);
+   sftp_server_response (p, &pkt, &pkt_len, SSH_FXP_VERSION, soft_errors);
+ 
+   lim_free (0, pkt);
+@@ -653,7 +654,8 @@
+   attrs.flags = 0;
+   ret = sftp_write_pkt (p, soft_errors,
+                         "14s4a", SSH_FXP_OPEN, ++p->request_id,
+-                        file, str_length (file), SSH_FXF_READ, &attrs);
++                        file, str_length (file), 
++			(t_uint32)SSH_FXF_READ, &attrs);
+   lim_free (0, file);
+ 
+   if (0 > ret)
+@@ -689,9 +691,9 @@
+       for (; ! eof && p->plreqs <= MIN(MAX_PL_REQS, numpkts + 1); p->plreqs++)
+ 	{
+ 	  ret = sftp_write_pkt (p, soft_errors, "14s84", SSH_FXP_READ,
+-				++p->request_id, handle, handle_len,
++				++p->request_id, handle, (size_t)handle_len,
+ 				total_read + SFTP_RWSIZE * p->plreqs,
+-				SFTP_RWSIZE);
++				(t_uint32)SFTP_RWSIZE);
+ 	  if (0 > ret)
+ 	    {
+ 	      lim_free (0, handle);
+@@ -765,7 +767,7 @@
+ 
+   if (0 > sftp_write_pkt (p, soft_errors,
+                           "14s", SSH_FXP_CLOSE, ++p->request_id,
+-                          handle, handle_len))
++                          handle, (size_t)handle_len))
+     return -1;
+ 
+   lim_free (0, handle);
+@@ -876,7 +878,7 @@
+     {
+       if (0 >sftp_write_pkt (pfs, soft_errors,
+                              "14s", SSH_FXP_READDIR, ++pfs->request_id,
+-                             handle, handle_len))
++                             handle, (size_t)handle_len))
+         return rel_table_nil;
+ 
+       if (0 > (i = sftp_server_response (pfs, &pkt, &pkt_len, SSH_FXP_NAME,
+@@ -915,7 +917,7 @@
+           if (!dots)
+             {
+               file = str_save_n (0, pkt+i, len);
+-              rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (file)), 0);
++              rel_add_records (&answer, rel_singleton_record_taking (rel_make_field_str (file)), rel_record_null);
+             }
+ 
+           i += len;
+@@ -945,7 +947,7 @@
+ 
+   if (0 > sftp_write_pkt (pfs, soft_errors,
+                           "14s", SSH_FXP_CLOSE, ++pfs->request_id,
+-                          handle, handle_len))
++                          handle, (size_t)handle_len))
+     return rel_table_nil;
+   lim_free (0, handle);
+ 
+@@ -1057,7 +1059,9 @@
+   ret = sftp_write_pkt (pfs, soft_errors,
+                         "14s4a", SSH_FXP_OPEN, ++pfs->request_id, file,
+                         str_length (file),
+-                        SSH_FXF_WRITE | SSH_FXF_CREAT | SSH_FXF_TRUNC, &attrs);
++                        (t_uint32)(SSH_FXF_WRITE | SSH_FXF_CREAT | 
++				   SSH_FXF_TRUNC),
++			&attrs);
+   lim_free (0, file);
+ 
+   if (0 > ret)
+@@ -1102,9 +1106,9 @@
+ 	    }
+ 
+ 	  ret = sftp_write_pkt (pfs, soft_errors, "14s8s", SSH_FXP_WRITE,
+-				++pfs->request_id, handle, handle_len,
++				++pfs->request_id, handle, (size_t)handle_len,
+ 				total_written + pfs->plreqs * sizeof (buf),
+-				buf, len);
++				buf, (size_t)len);
+ 	  if (0 > ret)
+ 	    {
+ 	      lim_free (0, handle);
+@@ -1144,7 +1148,7 @@
+ 
+   ret = sftp_write_pkt (pfs, soft_errors,
+                         "14s", SSH_FXP_CLOSE, ++pfs->request_id, handle,
+-                        handle_len);
++                        (size_t)handle_len);
+   lim_free (0, handle);
+ 
+   if (0 > ret)
+--- tla-1.3.3.orig/src/tla/libarch/local-cache.c
++++ tla-1.3.3/src/tla/libarch/local-cache.c
+@@ -70,7 +70,7 @@
+       error = arch_run_hook (hook,
+                              "ARCH_ARCHIVE", archive,
+                              "ARCH_REVISION", revision,
+-                             0);
++                             (t_uchar*)0);
+       
+       if (error)
+         {
+--- tla-1.3.3.orig/src/tla/libarch/missing.c
++++ tla-1.3.3/src/tla/libarch/missing.c
+@@ -124,7 +124,7 @@
+         log = arch_archive_log (arch, revision);
+ 
+         if (is_a_patch_present(has, log))
+-            rel_add_records (&to_skip, rel_copy_record (rel_peek_record (unfiltered, x)), 0);
++            rel_add_records (&to_skip, rel_copy_record (rel_peek_record (unfiltered, x)), rel_record_null);
+         lim_free (0, revision);
+       }
+     rel_free_table (has);
+--- tla-1.3.3.orig/src/tla/libarch/cmd-update.c
++++ tla-1.3.3/src/tla/libarch/cmd-update.c
+@@ -324,7 +324,8 @@
+         safe_printfmt (1, "* setting aside local changes temporarily\n");
+         safe_flush (1);
+         arch_call_cmd (arch_cmd_undo, argv[0], "-A", archive, "-d", dest, ancestor_rev,
+-                       (escape_classes == 0) ? "--unescaped" : 0, 0);
++                       (escape_classes == 0) ? "--unescaped" : (char*)0, 
++		       (char*)0);
+ 
+         safe_printfmt (1, "* updating for new patches in archive\n");
+         safe_flush (1);
+@@ -333,12 +334,13 @@
+             /* could be fancy here and binary search for local copies :-)
+              */
+             arch_call_cmd (arch_cmd_replay, argv[0], "--new", "-A", archive, "--dir", dest, version,
+-                           (escape_classes == 0) ? "--unescaped" : 0, 0);
++                           (escape_classes == 0) ? "--unescaped" : (char*)0, 
++			   (char*)0);
+           }
+         else
+           {
+             arch_call_cmd (arch_cmd_apply_delta, argv[0], "-A", archive, "--dir", dest, ancestor_rev,
+-                           latest_rev, (escape_classes == 0) ? "--unescaped" : 0, 0);
++                           latest_rev, (escape_classes == 0) ? "--unescaped" : (char*)0, (char*)0);
+           }
+ 
+         safe_printfmt (1, "* reapplying local changes\n");
+@@ -346,10 +348,10 @@
+ 
+         if (!forward)
+           arch_call_cmd (arch_cmd_redo, argv[0], "-d", dest,
+-                         (escape_classes == 0) ? "--unescaped" : 0, 0);
++                         (escape_classes == 0) ? "--unescaped" : (char*)0, (char*)0);
+         else
+           arch_call_cmd (arch_cmd_redo, argv[0], "--forward", "-d", dest,
+-                         (escape_classes == 0) ? "--unescaped" : 0, 0);
++                         (escape_classes == 0) ? "--unescaped" : (char*)0, (char*)0);
+ 
+ 
+         lim_free (0, ancestor_rev);
+--- tla-1.3.3.orig/src/tla/libarch/merge-points.c
++++ tla-1.3.3/src/tla/libarch/merge-points.c
+@@ -48,7 +48,7 @@
+       path = arch_log_file (tree_root, into_archive, into_spec);
+       level = arch_parse_package_name (arch_ret_patch_level, 0, into_spec);
+ 
+-      rel_add_records (&source_logs, rel_make_record_2_taking (rel_make_field_str (into_spec), rel_make_field_str (path)), 0);
++      rel_add_records (&source_logs, rel_make_record_2_taking (rel_make_field_str (into_spec), rel_make_field_str (path)), rel_record_null);
+ 
+       lim_free (0, path);
+       lim_free (0, level);
+@@ -96,7 +96,7 @@
+   if (arch_valid_package_name (into_spec, arch_no_archive, arch_req_patch_level, 0))
+     {
+       if (!upto)
+-        rel_add_records (&source_revisions, rel_singleton_record_taking (rel_make_field_str (into_spec)), 0);
++        rel_add_records (&source_revisions, rel_singleton_record_taking (rel_make_field_str (into_spec)), rel_record_null);
+       else
+         {
+           t_uchar * into_version = 0;
+@@ -106,7 +106,7 @@
+           all_source_revisions = arch_archive_revisions (into_arch, into_version, 2);
+           for (x = 0; x < rel_n_records (all_source_revisions); ++x)
+             {
+-              rel_add_records (&source_revisions, rel_copy_record (rel_peek_record (all_source_revisions, x)), 0);
++              rel_add_records (&source_revisions, rel_copy_record (rel_peek_record (all_source_revisions, x)), rel_record_null);
+               if (!str_cmp (rel_peek_str (all_source_revisions, x, 0), into_spec))
+                 break;
+             }
+@@ -201,7 +201,7 @@
+   for (x = 0; x < rel_n_records (new_patches); ++x)
+     {
+       if (!str_cmp_prefix (prefix, rel_peek_str (new_patches, x, 0)))
+-        rel_add_records (out, rel_make_record_2_taking (rel_make_field_str (level), rel_get_field (new_patches, x, 0)), 0);
++        rel_add_records (out, rel_make_record_2_taking (rel_make_field_str (level), rel_get_field (new_patches, x, 0)), rel_record_null);
+     }
+ 
+   free_assoc_table (headers);
+--- tla-1.3.3.orig/src/tla/libarch/proj-tree-lint.c
++++ tla-1.3.3/src/tla/libarch/proj-tree-lint.c
+@@ -267,7 +267,7 @@
+   for (i = 0; i < n_records; ++i)
+     {
+       if (hashtree_find (id_map, hash_key (rel_peek_str (explicit_ids, i, 0)), (void *)rel_peek_str (explicit_ids, i, 0), tree_lint_hashtree_rules) == 0)
+-	rel_add_records (ids_sans_files, rel_singleton_record_taking (rel_get_field (explicit_ids, i, 1)), 0);
++	rel_add_records (ids_sans_files, rel_singleton_record_taking (rel_get_field (explicit_ids, i, 1)), rel_record_null);
+     }
+ }
+ 
+@@ -308,14 +308,14 @@
+    */
+   if (category == arch_inventory_unrecognized)
+     {
+-      rel_add_records (&thunk->answer->unrecognized_files, rel_singleton_record_taking (rel_make_field_str (path)), 0);
++      rel_add_records (&thunk->answer->unrecognized_files, rel_singleton_record_taking (rel_make_field_str (path)), rel_record_null);
+     }
+ 
+   /* files classified as non-source because they lack an inventory id
+    */
+   if ((category != arch_inventory_source) && has_source_name)
+     {
+-      rel_add_records (&thunk->answer->warning_files, rel_singleton_record_taking (rel_make_field_str (path)), 0);
++      rel_add_records (&thunk->answer->warning_files, rel_singleton_record_taking (rel_make_field_str (path)), rel_record_null);
+     }
+ 
+ 
+@@ -325,7 +325,7 @@
+     {
+       if (safe_access (path, F_OK))
+         {
+-          rel_add_records (&thunk->answer->symlinks_sans_targets, rel_singleton_record_taking (rel_make_field_str (path)), 0);
++          rel_add_records (&thunk->answer->symlinks_sans_targets, rel_singleton_record_taking (rel_make_field_str (path)), rel_record_null);
+         }
+     }
+ 
+@@ -336,7 +336,7 @@
+       && (category == arch_inventory_source)
+       && (!id || (id[0] == '?')))
+     {
+-      rel_add_records (&thunk->answer->untagged_files, rel_singleton_record_taking (rel_make_field_str (path)), 0);
++      rel_add_records (&thunk->answer->untagged_files, rel_singleton_record_taking (rel_make_field_str (path)), rel_record_null);
+     }
+   else if ((thunk->options->method == arch_explicit_id_tagging) && (category == arch_inventory_source) && !id)
+     {
+@@ -344,7 +344,7 @@
+ 
+       dir = file_name_directory_file (0, path);
+       if (!arch_is_dont_care_explicit_dflt_dir (dir))
+-        rel_add_records (&thunk->answer->untagged_files, rel_singleton_record_taking (rel_make_field_str (path)), 0);
++        rel_add_records (&thunk->answer->untagged_files, rel_singleton_record_taking (rel_make_field_str (path)), rel_record_null);
+       lim_free (0, dir);
+     }
+ 
+@@ -380,7 +380,7 @@
+ 		      safe_printfmt (2, "i/o error during inventory traversal (%s) for %s\n", errno_to_string (errn), file);
+ 		      exit (2);
+ 		    }
+-		  rel_add_records (&thunk->explicit_ids, rel_make_record_2_taking (rel_make_field_str (id), rel_make_field_str (path)), 0);
++		  rel_add_records (&thunk->explicit_ids, rel_make_record_2_taking (rel_make_field_str (id), rel_make_field_str (path)), rel_record_null);
+ 		  lim_free (0, id);
+ 		}
+ 	      lim_free (0, path_dir);
+@@ -419,10 +419,10 @@
+             {
+               *(rel_table *)ar_push ((void **)&thunk->answer->duplicate_id_groups, 0, sizeof (rel_table)) = rel_table_nil;
+               binding->index = ar_size ((void *)thunk->answer->duplicate_id_groups, 0, sizeof (rel_table)) - 1;
+-              rel_add_records (&thunk->answer->duplicate_id_groups[binding->index], rel_make_record_2_taking (rel_make_field_str (binding->first_occurence), rel_make_field_str (id)), 0);
++              rel_add_records (&thunk->answer->duplicate_id_groups[binding->index], rel_make_record_2_taking (rel_make_field_str (binding->first_occurence), rel_make_field_str (id)), rel_record_null);
+             }
+ 
+-          rel_add_records (&thunk->answer->duplicate_id_groups[binding->index], rel_singleton_record_taking (rel_make_field_str (path)), 0);
++          rel_add_records (&thunk->answer->duplicate_id_groups[binding->index], rel_singleton_record_taking (rel_make_field_str (path)), rel_record_null);
+         }
+ 
+ 
+--- tla-1.3.3.orig/src/tla/libarch/cmd-apply-delta.c
++++ tla-1.3.3/src/tla/libarch/cmd-apply-delta.c
+@@ -223,13 +223,13 @@
+     if (cache_dir)
+       arch_call_cmd (arch_cmd_delta, argv[0],
+                      "--cache", cache_dir, "-A", default_archive, from_spec, to_spec, changeset,
+-                     ((escape_classes == 0) ? "--unescaped" : 0),
+-                     0);
++                     ((escape_classes == 0) ? "--unescaped" : (char*)0),
++                     (char*)0);
+     else
+       arch_call_cmd (arch_cmd_delta, argv[0],
+                      "-A", default_archive, from_spec, to_spec, changeset,
+-                     ((escape_classes == 0) ? "--unescaped" : 0),
+-                     0);
++                     ((escape_classes == 0) ? "--unescaped" : (char*)0),
++                     (char*)0);
+ 
+     {
+       struct arch_apply_changeset_report r = {0, };
+--- tla-1.3.3.orig/src/tla/libarch/archive.c
++++ tla-1.3.3/src/tla/libarch/archive.c
+@@ -77,7 +77,7 @@
+ 
+   arch_pfs_make_archive (name, location, version, mirror_of, dot_listing_lossage, signed_archive);
+ 
+-  arch_run_hook ("make-archive", "ARCH_ARCHIVE", name, "ARCH_LOCATION", location, 0);
++  arch_run_hook ("make-archive", "ARCH_ARCHIVE", name, "ARCH_LOCATION", location, (t_uchar*)0);
+ 
+   lim_free (0, version);
+ }
+@@ -590,7 +590,7 @@
+ 
+   ensure_writable (arch, 0);
+   answer = arch->vtable->make_category (errstr, arch, category);
+-  arch_run_hook ("make-category", "ARCH_ARCHIVE", arch->name, "ARCH_CATEGORY", category, 0);
++  arch_run_hook ("make-category", "ARCH_ARCHIVE", arch->name, "ARCH_CATEGORY", category, (t_uchar*)0);
+   return answer;
+ }
+ 
+@@ -603,7 +603,7 @@
+ 
+   ensure_writable (arch, 0);
+   answer = arch->vtable->make_branch (errstr, arch, branch);
+-  arch_run_hook ("make-branch", "ARCH_ARCHIVE", arch->name, "ARCH_BRANCH", branch, 0);
++  arch_run_hook ("make-branch", "ARCH_ARCHIVE", arch->name, "ARCH_BRANCH", branch, (t_uchar*)0);
+   return answer;
+ }
+ 
+@@ -616,7 +616,7 @@
+ 
+   ensure_writable (arch, 0);
+   answer = arch->vtable->make_version (errstr, arch, version);
+-  arch_run_hook ("make-version", "ARCH_ARCHIVE", arch->name, "ARCH_VERSION", version, 0);
++  arch_run_hook ("make-version", "ARCH_ARCHIVE", arch->name, "ARCH_VERSION", version, (t_uchar*)0);
+   return answer;
+ }
+ 
+--- tla-1.3.3.orig/src/tla/libarch/my.c
++++ tla-1.3.3/src/tla/libarch/my.c
+@@ -488,7 +488,7 @@
+    */
+   if (dir_spec && (op == arch_library_first))
+     {
+-      rel_add_records (&new_path, rel_singleton_record_taking (rel_make_field_str (dir)), 0);
++      rel_add_records (&new_path, rel_singleton_record_taking (rel_make_field_str (dir)), rel_record_null);
+     }
+ 
+   /* copy the old path, removing dir_spec (if any)
+@@ -501,7 +501,7 @@
+         {
+           if (str_cmp (rel_peek_str (old_path, x, 0), dir))
+             {
+-              rel_add_records (&new_path, rel_singleton_record_taking (rel_get_field (old_path, x, 0)), 0);
++              rel_add_records (&new_path, rel_singleton_record_taking (rel_get_field (old_path, x, 0)), rel_record_null);
+             }
+         }
+     }
+@@ -510,7 +510,7 @@
+    */
+   if (dir_spec && (op == arch_library_last))
+     {
+-      rel_add_records (&new_path, rel_singleton_record_taking (rel_make_field_str (dir)), 0);
++      rel_add_records (&new_path, rel_singleton_record_taking (rel_make_field_str (dir)), rel_record_null);
+     }
+ 
+ 
+--- tla-1.3.3.orig/src/tla/libarch/changeset-report.c
++++ tla-1.3.3/src/tla/libarch/changeset-report.c
+@@ -295,7 +295,7 @@
+                              rel_make_record_3_taking (rel_make_field_str (patch_file_loc),
+                                                        rel_field_ref (id_field),
+                                                        rel_make_field_str (patch_file_path)),
+-                             0);
++                             rel_record_null);
+           }
+ 
+         rel_field_unref (id_field);
+@@ -875,7 +875,7 @@
+                            rel_make_record_3_taking (rel_get_field (index, x, 0),
+                                                      rel_get_field (index, x, 1),
+                                                      rel_make_field_str (archive_path)),
+-                           0);
++                           rel_record_null);
+         }
+       else
+         {
+@@ -883,7 +883,7 @@
+                            rel_make_record_3_taking (rel_get_field (index, x, 0),
+                                                      rel_get_field (index, x, 1),
+                                                      rel_make_field_str (archive_path)),
+-                           0);
++                           rel_record_null);
+         }
+ 
+       lim_free (0, archive_path);
+@@ -954,7 +954,7 @@
+           rel_add_records (out, rel_make_record_3_taking (orig_loc_field,
+                                                           mod_loc_field,
+                                                           id_field),
+-                           0);
++                           rel_record_null);
+         }
+ 
+ 
