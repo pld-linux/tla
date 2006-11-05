@@ -1,17 +1,17 @@
 Summary:	tla arch - revision control system
 Summary(pl):	tla arch - system kontroli wersji
 Name:		tla
-Version:	1.3.3
-Release:	4
+Version:	1.3.5
+Release:	1
 Epoch:		1
 License:	GPL v2
 Group:		Development/Version Control
-Source0:	ftp://ftp.gnu.org/pub/gnu/gnu-arch/%{name}-%{version}.tar.gz
-# Source0-md5:	61d5dea41e071f78a8319401ee07ab0b
+Source0:	ftp://ftp.gnu.org/gnu/gnu-arch/%{name}-%{version}.tar.gz
+# Source0-md5:	db31ee89bc4788eef1eba1cee6c176ef
 Patch0:		%{name}-neon.patch
-Patch1:		%{name}-debian.patch
 URL:		http://www.gnu.org/software/gnu-arch/
 BuildRequires:	findutils
+BuildRequires:	libtool
 BuildRequires:	neon-devel
 Requires:	diffutils
 Requires:	patch
@@ -38,11 +38,10 @@ arch w wersji tla to wersja w C wzorcowych idei arch.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
+
+rm -rf src/libneon src/expat
 
 %build
-rm -rf src/tla/libneon
-ln -s /usr/include/neon src/tla/libneon
 cd src
 mkdir =build
 cd =build
@@ -54,10 +53,10 @@ export CFLAGS CXXFLAGS FFLAGS
 
 # custom configure script
 ../configure \
-	--prefix=%{_prefix} \
 	--destdir=$RPM_BUILD_ROOT \
-	--with-ssh-is-openssh=1 \
-	--with-cc="%{__cc}"
+	--prefix=%{_prefix} \
+	--with-cc="%{__cc}" \
+	--with-ssh-type=openssh
 %{__make} -j1
 
 # ok, I tested already
