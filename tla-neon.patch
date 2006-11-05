@@ -9,3 +9,42 @@
  				-lm 
  
  mains			:=	tla.c
+@@ -21,7 +21,7 @@
+ endif
+ 
+ $(programs):%$(cfg__exec_suffix):%.o $(thelib) $(filter-out -L%, $(filter-out -l%, $(libs)))
+-	$(SHELL) $(objroot)/libneon/libtool --mode=link $(CC) $(CFLAGS) -L../../expat -o $@ $< $(thelib) $(libs)
++	libtool --mode=link $(CC) $(CFLAGS) -o $@ $< $(thelib) $(libs)
+ 
+ clean: clean-prog
+ 
+--- tla-1.3.3.orig/src/tla/libarch/pfs-dav.c
++++ tla-1.3.3/src/tla/libarch/pfs-dav.c
+@@ -21,14 +21,14 @@
+ #include "tla/libfsutils/file-contents.h"
+ #include "tla/libarch/archives.h"
+ #include "tla/libarch/pfs-dav.h"
+-#include "libneon/src/ne_session.h"
+-#include "libneon/src/ne_basic.h"
+-#include "libneon/src/ne_request.h"
+-#include "libneon/src/ne_auth.h"
+-#include "libneon/src/ne_props.h"
+-#include "libneon/src/ne_uri.h"
+-#include "libneon/src/ne_redirect.h"
+-#include "libneon/src/ne_socket.h"
++#include <neon/ne_session.h>
++#include <neon/ne_basic.h>
++#include <neon/ne_request.h>
++#include <neon/ne_auth.h>
++#include <neon/ne_props.h>
++#include <neon/ne_uri.h>
++#include <neon/ne_redirect.h>
++#include <neon/ne_socket.h>
+ 
+ 
+ 
+--- tla-1.3.5/src/tla/PLUGIN/REQ.orig	2006-07-20 08:34:40.000000000 +0200
++++ tla-1.3.5/src/tla/PLUGIN/REQ	2006-11-05 11:56:13.359337750 +0100
+@@ -1,2 +1 @@
+ hackerlab	tla
+-libneon		tla
