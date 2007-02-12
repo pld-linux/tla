@@ -1,5 +1,5 @@
 Summary:	tla arch - revision control system
-Summary(pl.UTF-8):   tla arch - system kontroli wersji
+Summary(pl.UTF-8):	tla arch - system kontroli wersji
 Name:		tla
 Version:	1.3.5
 Release:	1
