@@ -1,5 +1,5 @@
 Summary:	tla arch - revision control system
-Summary(pl):	tla arch - system kontroli wersji
+Summary(pl.UTF-8):   tla arch - system kontroli wersji
 Name:		tla
 Version:	1.3.5
 Release:	1
@@ -26,11 +26,11 @@ and combine multiple lines of development for a single project.
 
 arch version tla is a C version of the reference arch concepts.
 
-%description -l pl
-tla arch jest systemem kontroli wersji - programem, który pozwala
-programistom archiwizowaæ historiê zmian wykonanych w rozwijanym przez
-nich oprogramowaniu oraz, co wa¿niejsze, pomaga programistom
-koordynowaæ, synchronizowaæ i ³±czyæ wiele linii kodu podczas rozwoju
+%description -l pl.UTF-8
+tla arch jest systemem kontroli wersji - programem, ktÃ³ry pozwala
+programistom archiwizowaÄ‡ historiÄ™ zmian wykonanych w rozwijanym przez
+nich oprogramowaniu oraz, co waÅ¼niejsze, pomaga programistom
+koordynowaÄ‡, synchronizowaÄ‡ i Å‚Ä…czyÄ‡ wiele linii kodu podczas rozwoju
 projektu.
 
 arch w wersji tla to wersja w C wzorcowych idei arch.
