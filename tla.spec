@@ -6,7 +6,7 @@ Release:	2
 Epoch:		1
 License:	GPL v2
 Group:		Development/Version Control
-Source0:	ftp://ftp.gnu.org/gnu/gnu-arch/%{name}-%{version}.tar.gz
+Source0:	http://ftp.gnu.org/gnu/gnu-arch/%{name}-%{version}.tar.gz
 # Source0-md5:	db31ee89bc4788eef1eba1cee6c176ef
 Patch0:		%{name}-neon.patch
 URL:		http://www.gnu.org/software/gnu-arch/
