@@ -10,9 +10,11 @@ Source0:	http://ftp.gnu.org/gnu/gnu-arch/%{name}-%{version}.tar.gz
 # Source0-md5:	db31ee89bc4788eef1eba1cee6c176ef
 Patch0:		%{name}-neon.patch
 URL:		http://www.gnu.org/software/gnu-arch/
-BuildRequires:	findutils
 BuildRequires:	libtool
 BuildRequires:	neon-devel
+# required by the configure script
+BuildRequires:	patch
+BuildRequires:	which
 Requires:	diffutils
 Requires:	patch
 Requires:	tar
