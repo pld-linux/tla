@@ -1,0 +1,11 @@
+--- tla-1.3.5/src/tla/tla/Makefile.in~	2015-09-06 12:57:55.000000000 +0300
++++ tla-1.3.5/src/tla/tla/Makefile.in	2015-09-06 14:05:46.958413933 +0300
+@@ -21,7 +21,7 @@
+ endif
+ 
+ $(programs):%$(cfg__exec_suffix):%.o $(thelib) $(filter-out -L%, $(filter-out -l%, $(libs)))
+-	libtool --mode=link $(CC) $(CFLAGS) -o $@ $< $(thelib) $(libs)
++	libtool --mode=link --tag=CC $(CC) $(CFLAGS) -o $@ $< $(thelib) $(libs)
+ 
+ clean: clean-prog
+ 

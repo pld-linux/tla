@@ -9,6 +9,7 @@ Group:		Development/Version Control
 Source0:	http://ftp.gnu.org/gnu/gnu-arch/%{name}-%{version}.tar.gz
 # Source0-md5:	db31ee89bc4788eef1eba1cee6c176ef
 Patch0:		%{name}-neon.patch
+Patch1:		libtool-tag.patch
 URL:		http://www.gnu.org/software/gnu-arch/
 BuildRequires:	libtool
 BuildRequires:	neon-devel
@@ -40,6 +41,7 @@ arch w wersji tla to wersja w C wzorcowych idei arch.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 rm -rf src/libneon src/expat
 
