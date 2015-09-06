@@ -73,12 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 
 rm -rf html
 cp -a src/docs-tla html
-find html -type f ! -name "*.html" -exec rm -rf "{}" ";"
-find html -type d -name ".arch-ids" -exec rm -rf "{}" ";" || :
-find html -type d -name "{arch}" -exec rm -rf "{}" ";" || :
-
-rm -rf $RPM_BUILD_ROOT%{_libdir}
-rm -rf $RPM_BUILD_ROOT%{_prefix}/src
+find html -type f ! -name "*.html" | xargs rm
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -86,4 +81,4 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc html
-%attr(755,root,root) %{_bindir}/*
+%attr(755,root,root) %{_bindir}/tla
