@@ -1,0 +1,15 @@
+From: Sergio Gelato <Sergio.Gelato@astro.su.se>
+Subject: Remember to close file descriptors before they go out of scope.
+
+--- a/src/tla/libarch/make-changeset.c
++++ b/src/tla/libarch/make-changeset.c
+@@ -1485,6 +1485,9 @@
+           safe_printfmt (orig_out_fd, "%s\n", orig_target);
+           safe_printfmt (mod_out_fd, "%s\n", mod_target);
+ 
++          safe_close (orig_out_fd);
++          safe_close (mod_out_fd);
++
+           lim_free (0, patch_basename_path);
+           lim_free (0, orig_patch);
+           lim_free (0, mod_patch);

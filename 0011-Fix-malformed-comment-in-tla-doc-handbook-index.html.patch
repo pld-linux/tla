@@ -1,0 +1,22 @@
+From: Kevin Ryde <user42@zip.com.au>
+Date: Mon, 8 Aug 2005 10:23:19 +1000
+Subject: Fix malformed comment in tla-doc/handbook/index.html
+
+Bug-Debian: http://bugs.debian.org/321887
+---
+ src/docs-tla/index.html |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/docs-tla/index.html b/src/docs-tla/index.html
+index bd0342b..a9ddbd3 100644
+--- a/src/docs-tla/index.html
++++ b/src/docs-tla/index.html
+@@ -9,7 +9,7 @@
+ 
+     </div>
+     <div class="mainContent">
+-<!-- BEGIN  the main body>
++<!-- BEGIN  the main body-->
+ 
+ <h1 class=essay-title>
+   A GNU Arch Handbook<br>

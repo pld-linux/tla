@@ -1,0 +1,38 @@
+From: Bernhard R. Link <brlink@debian.org>
+Date: Mon, 14 Nov 2011 16:29:16 +0100
+Subject: fix libneon configure options
+
+As tla's configure calls configure without any of the needed options and
+gets confused by CFLAGS containing -Werror=format-security, just give it
+the proper options...
+---
+ src/libneon/PLUGIN/AUTOCONF |   20 +++-----------------
+ 1 files changed, 3 insertions(+), 17 deletions(-)
+
+diff --git a/src/libneon/PLUGIN/AUTOCONF b/src/libneon/PLUGIN/AUTOCONF
+index 95a28bb..63d8945 100644
+--- a/src/libneon/PLUGIN/AUTOCONF
++++ b/src/libneon/PLUGIN/AUTOCONF
+@@ -1,19 +1,5 @@
+ #!/bin/sh
+ 
+-if test ! -z "$CFLAGS" ; then
+-  printf '\n'
+-  printf '================================\n'
+-  printf 'WARNING:\n'
+-  printf '\n'
+-  printf '  Discarding "-Werror" from $CFLAGS\n'
+-  printf '  while configuring "src/libneon"\n'
+-  printf '\n'
+-  printf '================================\n'
+-  printf '\n'
+-  if printf '%s' "$CFLAGS" | grep -q -e -Werror ; then
+-     CFLAGS="$(printf '%s' "$CFLAGS" | sed -e 's/-Werror//g')"
+-  fi
+-fi
+-
+-
+-"$1" --with-ssl=no --with-included-expat --with-expat --disable-shared --enable-static
++"$1" --with-ssl=no --with-included-expat --with-expat --disable-shared --enable-static \
++	${AUTOCONF_CROSS} CFLAGS="${AUTOCONF_CFLAGS}" CPPFLAGS="${AUTOCONF_CPPFLAGS}" \
++	LDFLAGS="${AUTOCONFLDFLAGS}"

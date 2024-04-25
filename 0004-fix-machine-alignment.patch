@@ -1,0 +1,26 @@
+From: Adam Majer <adamm@zombino.com>
+Date: Wed, 23 Jul 2008 11:26:32 -0500
+Subject: fix machine alignment
+
+As per upstream comments in https://bugzilla.redhat.com/show_bug.cgi?id=182742
+the invariant test should be removed.
+
+Bug-Debian: http://bugs.debian.org/491373
+Bug: https://bugzilla.redhat.com/show_bug.cgi?id=182742
+---
+ src/hackerlab/tests/arrays-tests/unit-ar.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/hackerlab/tests/arrays-tests/unit-ar.c b/src/hackerlab/tests/arrays-tests/unit-ar.c
+index f08ed99..982e052 100644
+--- a/src/hackerlab/tests/arrays-tests/unit-ar.c
++++ b/src/hackerlab/tests/arrays-tests/unit-ar.c
+@@ -50,7 +50,7 @@ static void
+ check_array (size_t size, unsigned long * ar)
+ {
+   int x;
+-  invariant (0 == ((unsigned long)ar & (MACHINE_ALIGNMENT - 1)));
++  /* invariant (0 == ((unsigned long)ar & (MACHINE_ALIGNMENT - 1))); */
+   invariant (size == ar_size ((void *)ar, lim_use_must_malloc, sizeof (*ar)));
+   for (x = 0; x < size; ++x)
+     invariant (ar[x] == HASH_INDEX (x));

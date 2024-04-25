@@ -13,7 +13,7 @@
  endif
  
  $(programs):%$(cfg__exec_suffix):%.o $(thelib) $(filter-out -L%, $(filter-out -l%, $(libs)))
--	$(SHELL) $(objroot)/libneon/libtool --mode=link $(CC) $(CFLAGS) -L../../expat -o $@ $< $(thelib) $(libs)
+-	$(SHELL) $(objroot)/libneon/libtool --mode=link $(CC) $(CFLAGS) -o $@ $< $(thelib) $(libs)
 +	libtool --mode=link $(CC) $(CFLAGS) -o $@ $< $(thelib) $(libs)
  
  clean: clean-prog

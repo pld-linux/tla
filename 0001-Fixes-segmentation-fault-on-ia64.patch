@@ -1,0 +1,21 @@
+From: Martín Ferrari <martin.ferrari@gmail.com>
+Date: Mon, 28 Aug 2006 07:02:15 +0200
+Subject: Fixes segmentation fault on ia64.
+
+Bug-Debian: http://bugs.debian.org/382465
+---
+ src/tla/libarch/invent.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/src/tla/libarch/invent.c b/src/tla/libarch/invent.c
+index 077d776..168e04c 100644
+--- a/src/tla/libarch/invent.c
++++ b/src/tla/libarch/invent.c
+@@ -16,6 +16,7 @@
+ #include "hackerlab/arrays/ar.h"
+ #include "hackerlab/fs/file-names.h"
+ #include "hackerlab/vu/safe.h"
++#include "tla/libarch/cmdutils.h"
+ #include "tla/libarch/inode-sig.h"
+ #include "tla/libarch/inv-ids.h"
+ #include "tla/libarch/invent.h"

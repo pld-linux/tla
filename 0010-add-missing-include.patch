@@ -1,0 +1,23 @@
+From: Tim Gokcen <hexetic@gmail.com>
+Date: Thu, 8 Sep 2011 14:43:36 -0400
+Subject: add missing include
+
+Fix Ubuntu Oneiric build which complains about function return value implicitly converted to pointer due to function header not being #included
+
+Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/tla/+bug/832877
+---
+ src/tla/libfsutils/tmp-files.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/src/tla/libfsutils/tmp-files.c b/src/tla/libfsutils/tmp-files.c
+index 13d7b02..fc39d6d 100644
+--- a/src/tla/libfsutils/tmp-files.c
++++ b/src/tla/libfsutils/tmp-files.c
+@@ -19,6 +19,7 @@
+ #include "hackerlab/fs/tmp-files.h"
+ #include "hackerlab/vu/safe.h"
+ #include "tla/libfsutils/tmp-files.h"
++#include "tla/libarch/cmdutils.h"
+ 
+ 
+ 

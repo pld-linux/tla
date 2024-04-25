@@ -1,0 +1,22 @@
+From: Barry deFreese <bddebian@comcast.net>
+Date: Fri, 7 Mar 2008 10:40:50 -0500
+Subject: fix bashisms
+
+use printf instead of echo -e.
+---
+ src/tla/tests/test-import.sh |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/tla/tests/test-import.sh b/src/tla/tests/test-import.sh
+index 8682fb1..0847c00 100644
+--- a/src/tla/tests/test-import.sh
++++ b/src/tla/tests/test-import.sh
+@@ -24,7 +24,7 @@ tla init-tree --nested jane@example.com--2003/hello-world--mainline--1.0
+ tla id-tagging-method explicit
+ tla add-id hello-world.c README
+ tla import -L 'initial import'
+-test "$(tla categories -A jane@example.com--2003)" = "$(echo -e cat\\ncow\\nhello-world)"
++test "$(tla categories -A jane@example.com--2003)" = "$(printf cat\\ncow\\nhello-world\\n)"
+ test "$(tla branches jane@example.com--2003/hello-world)" = "hello-world--mainline"
+ test "$(tla versions jane@example.com--2003/hello-world--mainline)" = "hello-world--mainline--1.0"
+ test -d $(tla whereis-archive jane@example.com--2003)/hello-world/hello-world--mainline/hello-world--mainline--1.0/base-0

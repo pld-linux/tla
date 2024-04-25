@@ -1,0 +1,35 @@
+From: Tim Gokcen <hexetic@gmail.com>
+Date: Sat, 12 Nov 2011 10:34:43 +0100
+Subject: fix spelling
+
+---
+ src/tla/libarch/cmd-archives.c      |    2 +-
+ src/tla/libarch/cmd-lock-revision.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/tla/libarch/cmd-archives.c b/src/tla/libarch/cmd-archives.c
+index 026ca5d..bacb1eb 100644
+--- a/src/tla/libarch/cmd-archives.c
++++ b/src/tla/libarch/cmd-archives.c
+@@ -152,7 +152,7 @@ arch_cmd_archives (t_uchar * program_name, int argc, char * argv[])
+     re_error = regcomp(&source_needle, "-SOURCE", REG_EXTENDED);
+ 
+     if (re_error)
+-      panic("Unable to compile regular expresion.");
++      panic("Unable to compile regular expression.");
+ 
+ 
+     for (x = 0; x < rel_n_records (list); ++x)
+diff --git a/src/tla/libarch/cmd-lock-revision.c b/src/tla/libarch/cmd-lock-revision.c
+index 99bb3ed..39762c8 100644
+--- a/src/tla/libarch/cmd-lock-revision.c
++++ b/src/tla/libarch/cmd-lock-revision.c
+@@ -227,7 +227,7 @@ arch_cmd_lock_revision (t_uchar * program_name, int argc, char * argv[])
+               }
+             case arch_revision_unknown_lock_state:
+               {
+-                safe_printfmt (2, "%s: unkown lock state for %s/%s\n",
++                safe_printfmt (2, "%s: unknown lock state for %s/%s\n",
+                                argv[0], archive, revision);
+                 safe_printfmt (2, "   (lock was in transition -- consider retrying)\n");
+                 exit (1);

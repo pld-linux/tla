@@ -1,0 +1,25 @@
+From: Julien PUYDT <jpuydt@free.fr>
+Date: Wed, 6 Jul 2005 15:48:48 +0200
+Subject: update tla tree-list to point to tla add-id
+
+the recent change broke "tla add", replacing it by "tla add-id". The
+problem is that "tla tree-lint" still points to the former command.
+
+Bug-Debian: http://bugs.debian.org/317128
+---
+ src/tla/libarch/proj-tree-lint.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/tla/libarch/proj-tree-lint.c b/src/tla/libarch/proj-tree-lint.c
+index 3f213f3..3154ab9 100644
+--- a/src/tla/libarch/proj-tree-lint.c
++++ b/src/tla/libarch/proj-tree-lint.c
+@@ -66,7 +66,7 @@ arch_print_tree_lint_report (int fd, struct arch_tree_lint_result * lint, int es
+ 
+   if (rel_n_records (lint->warning_files))
+     {
+-      safe_printfmt (fd, "These files would be source but lack inventory ids (`tla add' or a tagline perhaps?):\n\n");
++      safe_printfmt (fd, "These files would be source but lack inventory ids (`tla add-id' or a tagline perhaps?):\n\n");
+       rel_print_pika_escape_iso8859_1_table (fd, escape_classes, lint->warning_files);
+       safe_printfmt (fd, "\n\n");
+       if (!status)

@@ -2,14 +2,29 @@ Summary:	tla arch - revision control system
 Summary(pl.UTF-8):	tla arch - system kontroli wersji
 Name:		tla
 Version:	1.3.5
-Release:	11
+Release:	12
 Epoch:		1
 License:	GPL v2
 Group:		Development/Version Control
 Source0:	http://ftp.gnu.org/gnu/gnu-arch/%{name}-%{version}.tar.gz
 # Source0-md5:	db31ee89bc4788eef1eba1cee6c176ef
-Patch0:		%{name}-neon.patch
-Patch1:		libtool-tag.patch
+Patch1:		0001-Fixes-segmentation-fault-on-ia64.patch
+Patch2:		0002-Fixes-alignment-errors-on-hppa-and-sparc.patch
+Patch3:		0003-fix-bashisms.patch
+Patch4:		0004-fix-machine-alignment.patch
+Patch5:		0005-disable-builtin-expat.patch
+Patch6:		0006-tar-preserve.patch
+Patch7:		0007-fix-some-includes.patch
+Patch8:		0008-fix-spelling.patch
+Patch9:		0009-Remove-rpath-from-libneon.patch
+Patch10:	0010-add-missing-include.patch
+Patch11:	0011-Fix-malformed-comment-in-tla-doc-handbook-index.html.patch
+Patch12:	0012-update-tla-tree-list-to-point-to-tla-add-id.patch
+Patch13:	0013-fix-libneon-configure-options.patch
+Patch14:	0014-do-not-show-the-build-date.patch
+Patch15:	0015-changeset-fd-leak.patch
+Patch20:		%{name}-neon.patch
+Patch21:		libtool-tag.patch
 URL:		http://www.gnu.org/software/gnu-arch/
 BuildRequires:	libtool
 BuildRequires:	neon-devel
@@ -40,8 +55,25 @@ arch w wersji tla to wersja w C wzorcowych idei arch.
 
 %prep
 %setup -q
-%patch0 -p1
+# Patches from Debian
 %patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
+%patch14 -p1
+%patch15 -p1
+# Other patches
+%patch20 -p1
+%patch21 -p1
 
 rm -rf src/libneon src/expat
 

@@ -1,0 +1,45 @@
+From: unknown, added by Tim Gokcen <hexetic@gmail.com>
+Subject: fix some includes
+
+---
+ src/tla/libarch/cmd-apply-delta.c |    1 +
+ src/tla/libarch/cmdutils.c        |    1 +
+ src/tla/libfsutils/tmp-files.c    |    1 +
+ 3 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/src/tla/libarch/cmd-apply-delta.c b/src/tla/libarch/cmd-apply-delta.c
+index 8aebd8b..1b9111a 100644
+--- a/src/tla/libarch/cmd-apply-delta.c
++++ b/src/tla/libarch/cmd-apply-delta.c
+@@ -31,6 +31,7 @@
+ #include "tla/libarch/cmd-get.h"
+ #include "tla/libarch/cmd-delta.h"
+ #include "tla/libarch/cmd-apply-delta.h"
++#include "tla/libarch/cmdutils.h"
+ 
+ 
+ /* __STDC__ prototypes for static functions */
+diff --git a/src/tla/libarch/cmdutils.c b/src/tla/libarch/cmdutils.c
+index 3aafd13..bb88bb4 100644
+--- a/src/tla/libarch/cmdutils.c
++++ b/src/tla/libarch/cmdutils.c
+@@ -16,6 +16,7 @@
+ #include "hackerlab/char/str.h"
+ #include "tla/libarch/cmdutils.h"
+ #include "tla/libarch/libraries.h"
++#include "tla/libarch/local-cache.h"
+ #include "tla/libarch/project-tree.h"
+ #include "tla/libarch/patch-logs.h"
+ #include "tla/libarch/pfs.h"
+diff --git a/src/tla/libfsutils/tmp-files.c b/src/tla/libfsutils/tmp-files.c
+index 164acdb..13d7b02 100644
+--- a/src/tla/libfsutils/tmp-files.c
++++ b/src/tla/libfsutils/tmp-files.c
+@@ -16,6 +16,7 @@
+ #include "hackerlab/char/str-many.h"
+ #include "hackerlab/vu/safe.h"
+ #include "hackerlab/fs/file-names.h"
++#include "hackerlab/fs/tmp-files.h"
+ #include "hackerlab/vu/safe.h"
+ #include "tla/libfsutils/tmp-files.h"
+ 

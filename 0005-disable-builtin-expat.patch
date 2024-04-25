@@ -1,0 +1,61 @@
+From: Sylvain Beucler <beuc@beuc.net>
+Date: Mon, 14 Dec 2009 17:27:55 +0100
+Subject: disable builtin expat
+
+Fixes CVE-2009-3560 and CVE-2009-3720 denial-of-services
+
+Bug-Debian: http://bugs.debian.org/560940
+---
+ src/libneon/Makefile.in     |    2 +-
+ src/libneon/src/Makefile.in |    6 +++---
+ src/tla/tla/Makefile.in     |    2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/libneon/Makefile.in b/src/libneon/Makefile.in
+index f05110d..da89ddb 100644
+--- a/src/libneon/Makefile.in
++++ b/src/libneon/Makefile.in
+@@ -33,7 +33,7 @@ VPATH = @srcdir@
+ 
+ @SET_MAKE@
+ 
+-LDFLAGS = -L. -L$(top_builddir)/../expat @LDFLAGS@
++LDFLAGS = -L. @LDFLAGS@
+ LIBS = @LIBS@
+ CC = @CC@
+ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+diff --git a/src/libneon/src/Makefile.in b/src/libneon/src/Makefile.in
+index e3c61e5..aff1fca 100644
+--- a/src/libneon/src/Makefile.in
++++ b/src/libneon/src/Makefile.in
+@@ -25,14 +25,14 @@ LIBTOOL = @LIBTOOL@
+ 
+ # Flags
+ CPPFLAGS = @DEFS@ @CPPFLAGS@
+-CFLAGS = @CFLAGS@  -I$(top_builddir) -I$(top_srcdir)/../expat/lib @NEON_CFLAGS@
+-LDFLAGS = -L$(top_builddir)/../expat @LDFLAGS@
++CFLAGS = @CFLAGS@  -I$(top_builddir) @NEON_CFLAGS@
++LDFLAGS = @LDFLAGS@
+ NEON_LINK_FLAGS = @NEON_LINK_FLAGS@
+ # Note: don't substitute @LIBS@ in here; during a bundled
+ # build of this directory, @LIBS@ may include -lneon.
+ LIBS = @NEON_LIBS@ @NEON_LTLIBS@
+ 
+-COMPILE = $(CC) $(CPPFLAGS) $(CFLAGS)  -I$(top_builddir) -I$(top_srcdir)/../expat/lib @NEON_CFLAGS@
++COMPILE = $(CC) $(CPPFLAGS) $(CFLAGS)  -I$(top_builddir) @NEON_CFLAGS@
+ LINK = $(LIBTOOL) --quiet --mode=link $(CC) $(LDFLAGS)
+ 
+ NEON_BASEOBJS = ne_request.@NEON_OBJEXT@ ne_session.@NEON_OBJEXT@ 	    \
+diff --git a/src/tla/tla/Makefile.in b/src/tla/tla/Makefile.in
+index 13a761a..8c66e2e 100644
+--- a/src/tla/tla/Makefile.in
++++ b/src/tla/tla/Makefile.in
+@@ -21,7 +21,7 @@ Programs: $(programs)
+ endif
+ 
+ $(programs):%$(cfg__exec_suffix):%.o $(thelib) $(filter-out -L%, $(filter-out -l%, $(libs)))
+-	$(SHELL) $(objroot)/libneon/libtool --mode=link $(CC) $(CFLAGS) -L../../expat -o $@ $< $(thelib) $(libs)
++	$(SHELL) $(objroot)/libneon/libtool --mode=link $(CC) $(CFLAGS) -o $@ $< $(thelib) $(libs)
+ 
+ clean: clean-prog
+ 
